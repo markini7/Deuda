@@ -1,0 +1,2319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>DEUDA</title>
+<style>
+:root{--bg:#0d1a13;--f2:#15281d;--f3:#1d3527;--oro:#c9a227;--oro2:#8d7118;
+ --ficha:#b03a2e;--crema:#e8e2d0;--tenue:#6f8577;--rojo:#e5484d;--verde:#4ea86b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--crema);font-family:'Avenir Next',-apple-system,sans-serif;
+ overscroll-behavior:none;touch-action:manipulation;display:flex;flex-direction:column;overflow:hidden;
+ padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+.disp{font-family:Copperplate,Georgia,serif;letter-spacing:.14em}
+.num{font-family:ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
+
+#top{background:#0a1410;border-bottom:2px solid var(--oro2);padding:6px 12px 5px;flex:none}
+#top .et{font-size:9px;letter-spacing:.34em;color:var(--oro);text-align:center;font-family:Copperplate,Georgia,serif}
+#cifra{font-family:ui-monospace,Menlo,monospace;font-size:clamp(12px,3.7vw,17px);text-align:center;
+ margin:2px 0 4px;word-break:break-all;line-height:1.1}
+#cifra .cola{color:var(--rojo)}
+#cifra.p .cola{animation:tic .4s}
+@keyframes tic{0%{color:#fff;text-shadow:0 0 12px var(--rojo)}100%{color:var(--rojo)}}
+.barra{height:4px;background:#050c08;border-radius:2px;overflow:hidden}
+.barra i{display:block;height:100%;border-radius:2px;transition:width .4s;
+ background:linear-gradient(180deg,#f5dc7a,var(--oro))}
+#cifras{font-size:8.5px;color:var(--tenue);text-align:center;margin-top:2px;letter-spacing:.12em}
+
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 13px 18px}
+
+#fichas{text-align:center;margin-bottom:16px}
+#fichas .k{font-size:9px;letter-spacing:.3em;color:var(--tenue);font-family:Copperplate,Georgia,serif}
+#fichas .v{font-family:ui-monospace,Menlo,monospace;font-size:38px;color:var(--oro);line-height:1.1;margin-top:2px}
+
+.card{background:linear-gradient(180deg,#16291e,#101e17);border:1px solid var(--f3);border-radius:14px;padding:14px;margin-bottom:14px}
+.card h2{font-family:Copperplate,Georgia,serif;font-size:12px;letter-spacing:.18em;color:var(--oro);text-align:center}
+.rend{text-align:center;font-size:9px;color:var(--tenue);margin-top:2px}
+.lema{text-align:center;font-size:10.5px;color:var(--crema);opacity:.62;margin-top:7px;line-height:1.45}
+.nivm{display:flex;align-items:center;gap:7px;margin-top:4px}
+.nivm .lb{font-family:Copperplate,Georgia,serif;font-size:9.5px;letter-spacing:.14em;color:var(--oro);white-space:nowrap}
+.nivm .bo{font-size:9.5px;color:var(--tenue);white-space:nowrap;font-family:ui-monospace,monospace}
+.xpbar{flex:1;height:4px;background:#08110c;border-radius:2px;overflow:hidden}
+.xpbar i{display:block;height:100%;background:var(--oro);transition:width .25s}
+/* flotando en la esquina: no ocupa sitio en el texto, así la pestaña
+   no cambia de ancho ni deja un hueco vacío cuando no gira */
+.girando{position:absolute;top:4px;right:5px;width:5px;height:5px;border-radius:50%;
+ background:var(--ficha);opacity:0;transition:opacity .15s}
+.girando.on{opacity:1;animation:latepunto .7s ease-in-out infinite}
+@keyframes latepunto{50%{opacity:.3}}
+.rend b{color:var(--crema);font-weight:400}
+.pts{letter-spacing:.18em;color:var(--oro)}
+
+.rodillos{display:flex;gap:6px;justify-content:center;margin:10px 0 4px}
+.rod{flex:1;aspect-ratio:1/1;background:#08110c;border:1px solid #2a4a37;
+ border-radius:11px;overflow:hidden;position:relative}
+.rod::before,.rod::after{content:"";position:absolute;left:0;right:0;height:26%;z-index:2;pointer-events:none}
+.rod::before{top:0;background:linear-gradient(#08110c,rgba(8,17,12,0))}
+.rod::after{bottom:0;background:linear-gradient(rgba(8,17,12,0),#08110c)}
+.tira{position:absolute;left:0;right:0;top:0;display:flex;flex-direction:column;align-items:center}
+.tira b{height:var(--h);font-size:calc(var(--h) * 0.60);font-weight:400;
+ display:flex;align-items:center;justify-content:center;line-height:1}
+.tira b svg{display:block}
+.tira.mov{transition:transform var(--d) cubic-bezier(.09,.62,.13,1)}
+.tira.blur{filter:blur(1.4px)}
+.rod.casi{animation:casi .5s ease-out}
+@keyframes casi{0%{box-shadow:inset 0 0 0 0 rgba(201,162,39,0)}
+ 35%{box-shadow:inset 0 0 22px 0 rgba(201,162,39,.55)}
+ 100%{box-shadow:inset 0 0 0 0 rgba(201,162,39,0)}}
+#res{text-align:center;min-height:26px;font-size:13px;font-family:ui-monospace,monospace;color:var(--tenue)}
+#res.w{color:var(--oro)} #res.big{color:#fff;text-shadow:0 0 14px var(--oro);font-size:17px}
+.acc{display:flex;gap:8px;margin-top:8px}
+button.b{flex:1;padding:16px 6px;border-radius:11px;border:0;font-family:Copperplate,Georgia,serif;
+ font-size:12px;letter-spacing:.16em;background:var(--ficha);color:#fff}
+button.b:disabled{background:#26352c;color:#546b60}
+button.b.sec{flex:0 0 34%;background:var(--f3);color:var(--oro);border:1px solid var(--oro2)}
+button.b.sec.on{background:var(--oro);color:#0d1a13;border-color:var(--oro)}
+.combos{display:flex;flex-direction:column;gap:4px;margin-top:13px;
+ padding-top:11px;border-top:1px solid var(--f3)}
+.combos .c{display:flex;align-items:center;justify-content:space-between;
+ padding:5px 8px;background:#0b1712;border-radius:7px}
+.combos .c em{font-style:normal;font-size:17px;letter-spacing:2px;
+ display:flex;align-items:center;gap:2px;line-height:1}
+.combos .c b{font-family:ui-monospace,Menlo,monospace;font-weight:400;
+ font-size:13px;color:var(--oro)}
+.combos .c b.malo{color:var(--rojo)}
+.combos .c b .mult{color:var(--tenue);font-size:11.5px}
+.odds{display:flex;justify-content:center;gap:6px;margin-top:9px}
+.odds .o{flex:1;max-width:76px;background:#0b1712;border:1px solid var(--f3);
+ border-radius:7px;padding:3px 2px;text-align:center;line-height:1.1}
+.odds .sep2{width:1px;background:var(--f3);margin:2px 3px;flex:none}
+.odds .mini2 s{font-family:Copperplate,Georgia,serif;font-size:11px!important}
+.odds .o s{display:flex;align-items:center;justify-content:center;height:18px;
+ font-size:15px;text-decoration:none;line-height:1}
+.odds .o u{display:block;font-family:ui-monospace,Menlo,monospace;text-decoration:none;
+ font-size:11px;color:var(--oro);margin-top:1px;font-variant-numeric:tabular-nums}
+.et2{font-size:8.5px;letter-spacing:.24em;color:var(--tenue);text-align:center;
+ font-family:Copperplate,Georgia,serif;margin-top:11px}
+.sw{display:flex;gap:4px;margin-bottom:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+ padding-bottom:4px;scrollbar-width:none}
+.sw::-webkit-scrollbar{display:none}
+.sw button{flex:0 0 auto;min-width:0;background:var(--f2);border:1px solid var(--f3);
+ color:var(--tenue);padding:3px 10px;border-radius:11px;font-size:8.5px;letter-spacing:.06em;
+ line-height:1.4;font-family:Copperplate,Georgia,serif;white-space:nowrap;position:relative}
+.sw button.on{border-color:var(--oro);color:var(--oro);background:var(--f3)}
+.sw button.bloq{opacity:.4;border-style:dashed;color:var(--tenue)}
+.sw button.nueva{animation:pest 1s ease-in-out infinite;border-color:var(--oro);color:#fff}
+@keyframes pest{0%,100%{background:var(--f3);box-shadow:0 0 0 0 rgba(255,226,122,0)}
+ 50%{background:var(--oro2);box-shadow:0 0 12px 2px rgba(255,226,122,.55)}}
+
+
+h3.sec{font-family:Copperplate,Georgia,serif;font-size:9.5px;letter-spacing:.26em;color:var(--tenue);margin:4px 0 9px}
+.mej{background:var(--f2);border:1px solid var(--f3);border-radius:11px;padding:11px 12px;margin-bottom:8px;
+ display:flex;align-items:center;gap:10px}
+.mej.no{opacity:.42}
+.mej .n{font-size:12.5px}
+.mej .d{font-size:10.5px;color:var(--tenue);margin-top:2px}
+.mej .txt{flex:1}
+.mej button{background:var(--oro);border:0;color:#0d1a13;padding:9px 11px;border-radius:8px;
+ font-family:ui-monospace,monospace;font-size:11px;white-space:nowrap}
+.mej button:disabled{background:#26352c;color:#546b60}
+
+#toast{position:fixed;left:50%;top:36%;transform:translateX(-50%);z-index:9;text-align:center;pointer-events:none}
+.tst{font-family:ui-monospace,monospace;font-size:15px;color:var(--oro);background:rgba(8,17,12,.95);
+ border:1px solid var(--oro2);padding:9px 15px;border-radius:9px;margin-bottom:6px;animation:tt 1.6s forwards}
+@keyframes tt{0%{opacity:0;transform:scale(.92)}12%{opacity:1;transform:scale(1)}72%{opacity:1}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+#portada{position:fixed;inset:0;z-index:50;background:
+ radial-gradient(ellipse at 50% 32%,#1a3325,#0a1410 72%);
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ padding:30px 24px calc(30px + env(safe-area-inset-bottom));text-align:center}
+#portada.fuera{animation:salir .45s forwards}
+@keyframes salir{to{opacity:0;visibility:hidden}}
+#portada .marca{font-family:Copperplate,Georgia,serif;font-size:clamp(52px,17vw,86px);
+ letter-spacing:.16em;color:var(--oro);text-shadow:0 0 26px rgba(201,162,39,.45);margin-left:.16em}
+#portada .sub{font-family:Copperplate,Georgia,serif;font-size:10px;letter-spacing:.42em;
+ color:var(--tenue);margin-top:2px;margin-left:.42em}
+#portada .cifra{font-family:ui-monospace,Menlo,monospace;font-size:clamp(11px,3.2vw,15px);
+ color:var(--rojo);margin-top:26px;word-break:break-all;line-height:1.4}
+#portada .lema{font-size:12.5px;color:var(--crema);opacity:.75;margin-top:14px;line-height:1.6;max-width:19em}
+#portada .palos{font-size:26px;letter-spacing:.5em;margin-top:30px;margin-left:.5em;opacity:.5}
+#portada .palos span{display:inline-block;animation:bal 3.4s ease-in-out infinite}
+#portada .palos span:nth-child(2){animation-delay:.5s}
+#portada .palos span:nth-child(3){animation-delay:1s}
+@keyframes bal{50%{transform:translateY(-7px)}}
+#portada .btns{margin-top:34px;width:100%;max-width:290px}
+#portada button{width:100%;padding:17px;border:0;border-radius:12px;margin-bottom:9px;
+ font-family:Copperplate,Georgia,serif;font-size:12px;letter-spacing:.2em;
+ background:var(--ficha);color:#fff}
+#portada button.g{background:none;border:1px solid var(--oro2);color:var(--oro)}
+#portada .pie{font-size:9.5px;color:var(--tenue);margin-top:16px;letter-spacing:.12em}
+
+#sndB{position:fixed;left:8px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:40;
+ width:34px;height:34px;border-radius:50%;border:1px solid #2a4a37;background:rgba(8,17,12,.8);
+ color:var(--tenue);font-size:14px;line-height:1}
+#sndB.off{opacity:.45}
+#menuB{position:fixed;left:8px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:40;
+ width:34px;height:34px;border-radius:50%;border:1px solid #2a4a37;
+ background:rgba(8,17,12,.8);color:var(--tenue);font-size:15px;line-height:1}
+#devB{position:fixed;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:40;
+ width:34px;height:34px;border-radius:50%;border:1px solid #2a4a37;background:rgba(8,17,12,.8);
+ color:var(--tenue);font-size:15px;line-height:1}
+#dev{position:fixed;inset:0;z-index:45;background:rgba(5,10,7,.94);display:none;
+ overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 14px calc(20px + env(safe-area-inset-bottom));
+ font-family:ui-monospace,Menlo,monospace}
+#dev.on{display:block}
+#dev h4{font-size:10px;letter-spacing:.2em;color:#e5484d;border-bottom:1px dashed #3a2a2a;
+ padding-bottom:5px;margin:16px 0 9px;font-weight:400}
+#dev h4:first-of-type{margin-top:0}
+#dev .row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+#dev button{flex:1;min-width:66px;padding:11px 4px;border-radius:7px;border:1px solid #2a4a37;
+ background:#101e17;color:var(--crema);font-family:ui-monospace,monospace;font-size:11px}
+#dev button.rojo{border-color:#6b2b2b;color:#e5484d}
+#dev pre{font-size:10.5px;line-height:1.6;color:var(--tenue);white-space:pre-wrap;
+ background:#0a1410;border:1px solid #1d3527;border-radius:8px;padding:10px;margin-top:4px}
+#dev .cerrar{width:100%;margin-top:18px;padding:14px;background:#1d3527;color:var(--oro);border:0}
+#dev textarea{width:100%;height:70px;margin-top:6px;background:#0a1410;border:1px solid #1d3527;
+ border-radius:8px;color:var(--tenue);font-family:ui-monospace,monospace;font-size:10px;
+ padding:8px;resize:none;-webkit-user-select:text;user-select:text}
+
+/* ---- la tragaperras vive en una zona fija; solo hace scroll lo de abajo ---- */
+#fijo{flex:none;background:linear-gradient(180deg,#16291e,#101e17);
+ border-bottom:1px solid var(--f3);padding:6px 10px 8px;box-shadow:0 6px 14px rgba(0,0,0,.35);z-index:5}
+#barraF i{font-style:normal;font-size:8px;letter-spacing:.22em;color:var(--tenue);
+ font-family:Copperplate,Georgia,serif;display:block}
+#barraF b{font-family:ui-monospace,Menlo,monospace;font-weight:400;font-size:30px;
+ color:var(--oro);line-height:1.05;display:block;font-variant-numeric:tabular-nums}
+#barraF .der{position:absolute;right:0;bottom:2px;text-align:right}
+#barraF .der i{font-size:7.5px}
+#barraF .der b{color:var(--crema);font-size:12px;opacity:.8}
+#barraF b.sube{animation:fsube .4s ease-out}
+@keyframes fsube{0%{transform:scale(1.14);color:#fff}100%{transform:scale(1)}}
+#fijo h2{font-family:Copperplate,Georgia,serif;font-size:10px;letter-spacing:.14em;
+ color:var(--oro);line-height:1.1}
+#fijo .rodillos{margin:7px 0 2px}
+#fijo .rod{max-width:none}
+#fijo #res{min-height:16px;font-size:10px;opacity:.7}
+#fijo .acc{margin-top:4px}
+#fijo button.b{padding:13px 6px}
+#fijo .odds{margin-top:6px}
+#fijo .nivm{margin-top:3px}
+main{padding-top:12px}
+main .card:first-child{padding:11px 12px}
+main .combos{margin-top:0;padding-top:0;border-top:0}
+.et2{margin-top:0;margin-bottom:8px}
+.lema{margin-top:9px;padding-top:8px;border-top:1px solid var(--f3);opacity:.55}
+@media (max-height:700px){
+ 
+ #fijo .rodillos{margin:6px 0 2px}
+ #top{padding:7px 12px 6px}
+ #cifra{font-size:clamp(12px,3.7vw,18px)}
+}
+
+/* ---- barra compacta de fichas ---- */
+#barraF{position:relative;text-align:center;margin-bottom:5px;display:flex;
+ align-items:center;justify-content:center;gap:7px}
+#barraF>i{font-style:normal;font-size:11px;letter-spacing:.2em;color:var(--oro);
+ font-family:Copperplate,Georgia,serif;opacity:.8;align-self:flex-end;
+ position:relative;bottom:3px}
+#barraF>b{font-family:ui-monospace,Menlo,monospace;font-weight:400;font-size:29px;
+ color:var(--oro);line-height:1;font-variant-numeric:tabular-nums}
+#barraF>b.sube{animation:fsube .4s ease-out}
+@keyframes fsube{0%{transform:scale(1.14);color:#fff}100%{transform:scale(1)}}
+#barraF .suerte{position:absolute;right:2px;top:50%;transform:translateY(-50%);line-height:1}
+#barraF .suerte i{font-style:normal;font-size:7px;letter-spacing:.2em;color:var(--tenue);
+ font-family:Copperplate,Georgia,serif}
+#barraF .suerte b{font-size:11px;color:var(--tenue);opacity:.9}
+#barraF .suerte b{font-family:ui-monospace,Menlo,monospace;font-weight:400;color:var(--crema)}
+
+/* ---- estado de la máquina en una fila ---- */
+.estado{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:3px}
+.estado .izq{flex:1;min-width:0}
+.estado h2{text-align:left!important}
+.estado .izq .xpbar{display:block;height:5px;width:58%;min-width:70px;background:#08110c;
+ border-radius:3px;overflow:hidden;margin-top:5px;box-shadow:inset 0 1px 2px rgba(0,0,0,.6)}
+.estado .izq .xpbar i{display:block;height:100%;border-radius:3px;transition:width .25s;
+ background:linear-gradient(180deg,#f5dc7a,var(--oro))}
+/* el nivel de la máquina, con su chapa */
+.niv{flex:none;text-align:right;min-width:124px;max-width:50%}
+.niv em{font-style:normal;display:block;font-family:Copperplate,Georgia,serif;
+ font-size:8px;letter-spacing:.12em;color:var(--tenue);line-height:1.1;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.niv u{display:block;text-decoration:none;font-family:ui-monospace,Menlo,monospace;
+ font-size:8.5px;color:var(--oro);opacity:.9;line-height:1.3;margin-top:2px}
+.niv .xpbar{display:block;height:5px;background:#08110c;border-radius:3px;
+ overflow:hidden;margin-top:4px;box-shadow:inset 0 1px 2px rgba(0,0,0,.6)}
+.niv .xpbar i{display:block;height:100%;border-radius:3px;transition:width .25s;
+ background:linear-gradient(180deg,#f5dc7a,var(--oro))}
+.estado .izq.sube{animation:nsube .5s ease-out}
+@keyframes nsube{0%{transform:scale(1.05)}100%{transform:scale(1)}}
+
+/* ---- el mueble de la tragaperras ---- */
+.maq{position:relative;margin:9px 4px 2px;padding:7px;border-radius:13px;
+ background:linear-gradient(180deg,#33270f,#1b1408);
+ border:3px solid var(--oro2);
+ box-shadow:inset 0 0 0 1px rgba(217,182,74,.35),0 4px 14px rgba(0,0,0,.5)}
+.maq .rodillos{margin:0;gap:3px}
+/* display:flex de .rodillos gana al ocultado por [hidden]: hay que forzarlo */
+#rodillos2[hidden]{display:none}
+.maq .fila2{margin-top:5px}
+.maq .fila2 .rod{aspect-ratio:1/.52}
+.maq .fila2 .tira b{font-size:calc(var(--h) * 0.42);font-family:Copperplate,Georgia,serif;
+ letter-spacing:.04em}
+/* con dos filas la línea marca la de arriba, que es la que forma el combo */
+.maq.dosfilas .pago{top:auto;transform:none;
+ top:calc(7px + var(--h1,0px) / 2)}
+.rod{border:0!important;border-radius:4px!important;
+ background:linear-gradient(180deg,#020604 0%,#0d1a12 28%,#13251b 50%,#0d1a12 72%,#020604 100%)!important}
+.rod::before,.rod::after{background:none!important}
+.rod{box-shadow:inset 0 10px 12px -7px #000,inset 0 -10px 12px -7px #000}
+
+/* línea de pago */
+.pago{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
+ pointer-events:none;display:flex;align-items:center;z-index:3}
+.pago .linea{flex:1;height:2px;
+ background:linear-gradient(90deg,transparent,rgba(229,72,77,.75) 10%,
+  rgba(229,72,77,.75) 90%,transparent)}
+.pago .pico{width:0;height:0;flex:none;
+ border-top:7px solid transparent;border-bottom:7px solid transparent}
+.pago .pico.i{border-left:9px solid var(--oro);margin-left:-3px}
+.pago .pico.d{border-right:9px solid var(--oro);margin-right:-3px}
+
+/* bombillas */
+.maq.desnuda{background:none;border:0;box-shadow:none;padding:0;margin:9px 0 2px}
+.maq.desnuda .pago{display:none}
+.maq.desnuda .bomb{display:none}
+.maq.desnuda .rod{box-shadow:inset 0 8px 10px -7px #000,inset 0 -8px 10px -7px #000;
+ border:1px solid #2a4a37!important;border-radius:10px!important}
+.bomb{position:absolute;width:7px;height:7px;border-radius:50%;background:#4a3d18;z-index:1;
+ box-shadow:0 0 0 1px rgba(0,0,0,.5);transition:background .12s,box-shadow .12s}
+.bomb.on{background:#ffe27a;box-shadow:0 0 8px 2px rgba(255,210,74,.7)}
+.bomb.jack{background:#fff;box-shadow:0 0 11px 3px rgba(255,255,255,.85)}
+
+/* ---- cartel de máquina nueva ---- */
+#info{position:fixed;inset:0;z-index:49;display:none;align-items:center;justify-content:center;
+ background:rgba(5,10,7,.88);padding:24px}
+#info.on{display:flex;animation:nvfade .3s}
+#info .caja{width:100%;max-width:310px;text-align:center;padding:20px 18px 16px;border-radius:16px;
+ background:linear-gradient(180deg,#1d3527,#101e17);border:2px solid var(--oro2);
+ box-shadow:0 12px 40px rgba(0,0,0,.7);animation:nvpop .45s cubic-bezier(.2,1.5,.4,1)}
+#info .rot{font-family:Copperplate,Georgia,serif;font-size:9px;letter-spacing:.3em;color:var(--oro)}
+#info .rot:empty{display:none}
+#info .nom{line-height:1.35}
+#info .nom{font-family:Copperplate,Georgia,serif;font-size:16px;letter-spacing:.08em;
+ color:var(--crema);margin:8px 0 9px}
+#info .lem{font-size:12px;color:var(--crema);opacity:.82;line-height:1.65;text-align:left}
+#info .lem b{color:var(--oro);font-weight:400}
+#info button{width:100%;margin-top:16px;padding:13px;border:0;border-radius:10px;
+ background:var(--f3);color:var(--oro);font-family:Copperplate,Georgia,serif;
+ font-size:11px;letter-spacing:.2em}
+#nueva{position:fixed;inset:0;z-index:48;display:none;align-items:center;justify-content:center;
+ background:rgba(5,10,7,.86);padding:24px}
+#nueva.on{display:flex;animation:nvfade .3s}
+@keyframes nvfade{from{opacity:0}to{opacity:1}}
+#nueva .caja{width:100%;max-width:310px;text-align:center;padding:22px 18px 18px;border-radius:16px;
+ background:linear-gradient(180deg,#33270f,#12200f);border:3px solid var(--oro);
+ box-shadow:0 0 0 1px #ffe27a55,0 12px 40px rgba(0,0,0,.7);animation:nvpop .45s cubic-bezier(.2,1.5,.4,1)}
+@keyframes nvpop{from{transform:scale(.7) translateY(20px);opacity:0}to{transform:scale(1)}}
+#nueva .rot{font-family:Copperplate,Georgia,serif;font-size:9px;letter-spacing:.34em;color:var(--oro)}
+#nueva .nom{font-family:Copperplate,Georgia,serif;font-size:23px;letter-spacing:.1em;color:#fff;
+ margin:9px 0 6px;text-shadow:0 0 18px rgba(255,226,122,.7)}
+#nueva .lem{font-size:11.5px;color:var(--crema);opacity:.85;line-height:1.6}
+#nueva .sim{font-size:30px;letter-spacing:8px;margin:16px 0 4px}
+#nueva .sim span{display:inline-block;animation:nvbota .9s ease-in-out infinite}
+#nueva .sim span:nth-child(2){animation-delay:.14s}
+#nueva .sim span:nth-child(3){animation-delay:.28s}
+#nueva .sim span:nth-child(4){animation-delay:.42s}
+@keyframes nvbota{0%,100%{transform:translateY(0)}45%{transform:translateY(-9px)}}
+#nueva button{width:100%;margin-top:16px;padding:15px;border:0;border-radius:11px;
+ background:var(--ficha);color:#fff;font-family:Copperplate,Georgia,serif;
+ font-size:12px;letter-spacing:.2em}
+
+/* ---- pestañas de premios y mejoras ---- */
+#tabs{display:flex;flex:none;background:#0a1410;border-bottom:1px solid var(--f3)}
+#tabs button{flex:1;background:none;border:0;color:var(--tenue);padding:10px 0 8px;
+ font-size:9.5px;letter-spacing:.22em;font-family:Copperplate,Georgia,serif;
+ border-bottom:2px solid transparent;position:relative}
+#tabs button.on{color:var(--oro);border-bottom-color:var(--oro)}
+#tabs button.nueva{animation:pest 1s ease-in-out infinite;color:#fff}
+#tabs button span{position:absolute;top:7px;margin-left:5px;width:6px;height:6px;
+ border-radius:50%;background:var(--ficha);box-shadow:0 0 6px rgba(176,58,46,.9)}
+main section{display:none}
+main section.on{display:block}
+main{padding-top:14px}
+
+/* ---- revelado progresivo ---- */
+.oculto{display:none!important}
+.nace{animation:nace .55s cubic-bezier(.2,1.2,.4,1)}
+@keyframes nace{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:none}}
+#guia{text-align:center;font-size:10.5px;color:var(--crema);opacity:.62;
+ margin-top:8px;line-height:1.5;min-height:15px;transition:opacity .3s}
+#guia:empty{margin-top:0;min-height:0}
+
+/* ---- ajustes en la portada ---- */
+#portada button.chico{padding:12px;font-size:10px;border-color:#2a4a37;color:var(--tenue);
+ letter-spacing:.24em}
+#ajustes{position:fixed;inset:0;z-index:55;display:none;align-items:center;justify-content:center;
+ background:rgba(5,10,7,.9);padding:24px}
+#ajustes.on{display:flex}
+#ajustes .caja{width:100%;max-width:300px;background:var(--f2);border:1px solid var(--f3);
+ border-radius:14px;padding:18px 16px}
+#ajustes h3{font-family:Copperplate,Georgia,serif;font-size:11px;letter-spacing:.24em;
+ color:var(--oro);text-align:center;margin-bottom:16px}
+#ajustes .lin{display:flex;justify-content:space-between;align-items:center;
+ padding:11px 0;border-bottom:1px solid var(--f3);font-size:12.5px}
+#ajustes .lin:last-of-type{border-bottom:0}
+#ajustes .lin small{display:block;font-size:9.5px;color:var(--tenue);margin-top:2px}
+.sw2{width:44px;height:25px;border-radius:13px;background:#2a3a31;position:relative;flex:none;
+ border:0;transition:background .2s}
+.sw2::after{content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;
+ background:var(--crema);transition:transform .2s}
+.sw2.on{background:var(--oro)}
+.sw2.on::after{transform:translateX(19px)}
+body.sinanim *{animation:none!important;transition:none!important}
+#ajustes input[type=range]{width:120px;accent-color:var(--oro)}
+#ajustes .cerrar{width:100%;margin-top:16px;padding:13px;border:0;border-radius:10px;
+ background:var(--f3);color:var(--oro);font-family:Copperplate,Georgia,serif;
+ font-size:11px;letter-spacing:.18em}
+
+/* ---- cinemática de apertura ---- */
+#cine{position:fixed;inset:0;z-index:60;background:#050906;display:flex;
+ flex-direction:column;align-items:center;justify-content:center;padding:34px 26px;text-align:center}
+#cine.fuera{animation:cfin 1.1s forwards}
+@keyframes cfin{to{opacity:0;visibility:hidden}}
+#cine.golpe{animation:cgolpe .5s}
+@keyframes cgolpe{
+ 0%{background:#050906}
+ 6%{background:#e8e2d0}
+ 12%{background:#050906;transform:translate(5px,-4px)}
+ 20%{transform:translate(-6px,3px)}28%{transform:translate(4px,4px)}
+ 36%{transform:translate(-3px,-3px)}100%{transform:none}}
+#cineToca{font-family:Copperplate,Georgia,serif;font-size:11px;letter-spacing:.36em;
+ color:var(--tenue);animation:lat 2s ease-in-out infinite}
+@keyframes lat{50%{opacity:.32}}
+#cineTxt{font-size:clamp(15px,4.6vw,21px);line-height:1.7;color:var(--crema);
+ max-width:19em;min-height:5.1em;text-align:center;display:block}
+#cineTxt .ger{color:#e8c76a;font-style:italic}
+/* ancho cero: si el cursor ocupara sitio, empujaría la palabra siguiente
+   a la línea de abajo y volvería a subirla al escribir la letra próxima */
+#cineTxt .cur{display:inline-block;width:0;overflow:visible;opacity:.7;
+ animation:cur .7s steps(1) infinite}
+#cineTxt .invis{visibility:hidden}
+#cineTxt.apaga{opacity:0;transition:opacity .55s ease-out}
+#cineSkip.apaga{opacity:0;transition:opacity .4s}
+@keyframes cur{50%{opacity:0}}
+#cineNum{font-family:ui-monospace,Menlo,monospace;font-size:clamp(13px,4.2vw,22px);
+ color:#4ea86b;margin-top:20px;min-height:1.4em;word-break:break-all;letter-spacing:.02em;
+ transition:color .25s}
+#cineNum.mal{color:var(--rojo)}
+#cineNum.vuela{transition:transform 1.15s cubic-bezier(.4,0,.2,1),font-size 1.15s cubic-bezier(.4,0,.2,1);
+ will-change:transform;white-space:nowrap;word-break:normal}
+#cineTit{font-family:Copperplate,Georgia,serif;font-size:clamp(46px,15vw,74px);
+ letter-spacing:.16em;color:var(--oro);text-shadow:0 0 30px rgba(201,162,39,.5);
+ margin-left:.16em;opacity:0;line-height:1.1}
+#cineTit.on{animation:tit .75s cubic-bezier(.15,.9,.25,1)}
+#cineTit.vuela{transition:transform 1.15s cubic-bezier(.4,0,.2,1),font-size 1.15s cubic-bezier(.4,0,.2,1);
+ will-change:transform}
+@keyframes tit{0%{opacity:0;transform:scale(2.1);filter:blur(6px)}
+ 55%{opacity:1;filter:blur(0)}
+ 100%{opacity:1;transform:scale(1)}}
+#cine.sube{animation:cs 1.6s}
+@keyframes cs{50%{background:#0c1a0f}}
+#cineSkip{position:absolute;top:calc(14px + env(safe-area-inset-top));right:14px;
+ background:none;border:1px solid #2a4a37;color:var(--tenue);border-radius:16px;
+ padding:6px 13px;font-family:Copperplate,Georgia,serif;font-size:9px;letter-spacing:.2em}
+#cineTxt.palabra{font-family:Copperplate,Georgia,serif;font-size:clamp(28px,9vw,44px);
+ letter-spacing:.2em;color:var(--crema)}
+#portada.entra>*:not(.marca):not(.cifra){animation:pent .7s .15s backwards}
+@keyframes pent{from{opacity:0}to{opacity:1}}
+
+/* ---- el premio sale de la máquina ---- */
+.flot{position:absolute;left:50%;top:38%;z-index:6;pointer-events:none;white-space:nowrap;
+ font-family:ui-monospace,Menlo,monospace;font-weight:600;
+ background:rgba(6,12,8,.88);border-radius:12px;padding:3px 10px;
+ box-shadow:0 3px 12px rgba(0,0,0,.6);
+ animation:flsube 1.15s cubic-bezier(.2,.9,.3,1) forwards}
+@keyframes flsube{0%{opacity:0;transform:translate(-50%,10px) scale(.6)}
+ 18%{opacity:1;transform:translate(-50%,-4px) scale(1.12)}
+ 30%{transform:translate(-50%,-8px) scale(1)}
+ 100%{opacity:0;transform:translate(-50%,-58px) scale(1)}}
+.flot.malo{color:var(--rojo)}
+.flot.jack{background:rgba(6,12,8,.92);border:1px solid rgba(255,210,74,.75);
+ padding:6px 15px 7px;text-align:center;line-height:1.15;
+ box-shadow:0 0 26px rgba(255,210,74,.35),0 3px 14px rgba(0,0,0,.7)}
+.flot.jack i{display:block;font-style:normal;font-family:Copperplate,Georgia,serif;
+ font-size:9px;letter-spacing:.24em;color:var(--oro);margin-bottom:2px}
+.flot.jack u{text-decoration:none;font-size:10px;color:var(--ficha);
+ font-weight:600;margin-left:6px;letter-spacing:0}
+.flot.jack span{display:block}
+
+
+/* ---- Bobby ---- */
+#bobPanel .quien{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+#bobPanel .cara{width:34px;height:34px;flex:none;border-radius:50%;background:var(--f3);
+ border:1px solid var(--oro2);display:flex;align-items:center;justify-content:center;font-size:17px}
+#bobPanel .quien b{display:block;font-weight:400;font-size:12.5px}
+#bobPanel .quien small{display:block;font-size:9.5px;color:var(--tenue);margin-top:2px}
+#bobPanel .mini{margin:0 0 9px;padding:6px;border-radius:11px;
+ background:linear-gradient(180deg,#33270f,#1b1408);border:2px solid var(--oro2);
+ box-shadow:inset 0 0 0 1px rgba(217,182,74,.3),0 3px 10px rgba(0,0,0,.45)}
+#bobPanel .mini .f{display:flex;gap:4px;justify-content:center}
+#bobPanel .mini .f2{margin-top:4px}
+#bobPanel .mini .rod{flex:1;max-width:60px;aspect-ratio:1/1;border-radius:7px!important}
+#bobPanel .mini.dos .f2 .rod{aspect-ratio:1/.6}
+#bobPanel .mini .f2 .tira b{font-size:calc(var(--h) * 0.44);
+ font-family:Copperplate,Georgia,serif;letter-spacing:.04em}
+#bobPanel .mini .tira.vuelo{animation:bvuela .42s linear infinite;filter:blur(1.7px)}
+@keyframes bvuela{from{transform:translateY(0)}
+ to{transform:translateY(calc(var(--h) * -8))}}
+#bobPanel .bote{position:relative;background:#0b1712;border:1px solid var(--f3);
+ border-radius:9px;padding:14px 10px;text-align:center;margin-bottom:9px}
+#bobPanel .fl{position:absolute;inset:0;pointer-events:none;overflow:visible}
+#bobPanel .bfl{position:absolute;bottom:6px;transform:translateX(-50%);
+ font-family:ui-monospace,Menlo,monospace;font-size:13px;color:var(--ficha);
+ white-space:nowrap;text-shadow:0 2px 8px rgba(0,0,0,.7);
+ animation:bsube 1s ease-out forwards}
+#bobPanel .bfl.malo{color:var(--rojo)}
+#bobPanel .bfl.jack{color:var(--oro);font-size:16px}
+@keyframes bsube{0%{opacity:0;transform:translate(-50%,6px) scale(.9)}
+ 18%{opacity:1;transform:translate(-50%,0) scale(1)}
+ 100%{opacity:0;transform:translate(-50%,-34px) scale(1)}}
+#bobPanel .bote i{font-style:normal;display:block;font-size:8px;letter-spacing:.24em;
+ color:var(--tenue);font-family:Copperplate,Georgia,serif}
+#bobPanel .bote b{display:block;font-family:ui-monospace,Menlo,monospace;font-weight:400;
+ font-size:30px;color:var(--oro);margin-top:4px;font-variant-numeric:tabular-nums}
+#bobPanel .barra2{height:3px;background:#08110c;border-radius:2px;overflow:hidden;margin:8px 0 0}
+#bobPanel .barra2 i{display:block;height:100%;width:0;background:var(--ficha);transition:width .2s}
+#bobPanel .acc2{display:flex;gap:7px}
+#bobPanel .acc2 button{flex:1;padding:13px 6px;border:0;border-radius:10px;
+ font-family:Copperplate,Georgia,serif;font-size:10.5px;letter-spacing:.14em;
+ background:var(--ficha);color:#fff}
+#bobPanel .acc2 button.sec{background:var(--f3);color:var(--oro);border:1px solid var(--oro2)}
+#bobPanel .acc2 button:disabled{background:#26352c;color:#546b60;border-color:#26352c}
+/* ---- la plantilla ---- */
+#nomina .emp{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--f3)}
+#nomina .emp:last-child{border-bottom:0}
+#nomina .num{width:24px;height:24px;flex:none;border-radius:50%;background:var(--f3);
+ border:1px solid var(--oro2);color:var(--oro);font-family:ui-monospace,monospace;
+ font-size:11px;display:flex;align-items:center;justify-content:center}
+#nomina .info{flex:1;min-width:0}
+#nomina .info b{display:block;font-weight:400;font-size:12px}
+#nomina .info small{display:block;font-size:9.5px;color:var(--tenue);margin-top:2px}
+#nomina select{background:#0b1712;border:1px solid var(--f3);color:var(--crema);
+ border-radius:7px;padding:6px 7px;font-size:10.5px;font-family:'Avenir Next',sans-serif;
+ max-width:44%}
+#nomina .cab{font-size:10.5px;color:var(--tenue);line-height:1.5;margin-bottom:9px}
+#nomina .cab b{color:var(--oro);font-weight:400}
+.sw button .rob{position:absolute;bottom:3px;right:5px;width:5px;height:5px;
+ border-radius:50%;background:var(--oro)}
+</style>
+</head>
+<body>
+
+<div id="cine">
+  <button id="cineSkip" hidden>SALTAR</button>
+  <div id="cineToca">TOCA PARA EMPEZAR</div>
+  <div id="cineTxt"></div>
+  <div id="cineTit"></div>
+  <div id="cineNum"></div>
+</div>
+
+<div id="portada">
+  <div class="marca">DEUDA</div>
+  <div class="sub">CASINO EL DESCANSO</div>
+  <div class="cifra" id="pCifra">$5.000.000.000.000.000.000</div>
+  <div class="lema">Debes esa cifra a la casa. No sales de aquí hasta que llegue a cero.</div>
+  <div class="palos"><span style="color:#b03a2e">♥</span><span style="color:#c9a227">★</span><span style="color:#5fd0e0">◆</span></div>
+  <div class="btns">
+    <button id="pSeguir" hidden>SEGUIR DONDE LO DEJASTE</button>
+    <button id="pJugar">EMPEZAR A PAGAR</button>
+    <button id="ajB" class="g chico">AJUSTES</button>
+  </div>
+  <div class="pie" id="pPie">Del suelo salen fichas. De las fichas, dólares.</div>
+</div>
+
+<div id="top">
+  <div class="et">DEUDA</div>
+  <div id="cifra" class="num">$0</div>
+  <div id="cifras"></div>
+</div>
+
+<!-- zona fija: la tragaperras nunca se va de pantalla -->
+<div id="fijo">
+  <div id="barraF">
+    <b id="vF">0</b><i>FICHAS</i>
+    <span class="suerte"><i>SUERTE</i> <b id="vN">1</b></span>
+  </div>
+
+  <div class="sw" id="sw" hidden></div>
+
+  <div class="estado">
+    <span class="izq">
+      <h2 id="mNom"></h2>
+      <span class="xpbar" id="bNivel"><i id="mXp"></i></span>
+    </span>
+    <span class="niv" id="bDesb">
+      <em id="hito"></em>
+      <span class="xpbar"><i id="pbar"></i></span>
+      <u id="cnt"></u>
+    </span>
+  </div>
+
+  <div class="maq" id="maq">
+    <div class="rodillos" id="rodillos"></div>
+    <div class="pago"><i class="pico i"></i><i class="linea"></i><i class="pico d"></i></div>
+    <div class="rodillos fila2" id="rodillos2" hidden></div>
+  </div>
+
+  <div id="res"></div>
+  <div class="acc"><button class="b" id="bTirar">TIRAR</button></div>
+  <div id="guia"></div>
+  <div class="odds" id="mOdds"></div>
+</div>
+
+<nav id="tabs">
+  <button class="on" data-t="premios">PREMIOS</button>
+  <button data-t="mejoras" id="tabMej">MEJORAS<span id="pt" hidden></span></button>
+  <button data-t="bobby" id="tabPla" class="oculto">BOBBY<span id="ptB" hidden></span></button>
+</nav>
+
+<main>
+  <section id="p-premios" class="on">
+    <div class="card">
+      <div class="et2" id="et2">PREMIOS</div>
+      <div class="combos" id="mCombos"></div>
+      <div class="lema" id="mLema"></div>
+    </div>
+  </section>
+
+  <section id="p-mejoras">
+    <div id="listaMej"></div>
+  </section>
+
+  <section id="p-bobby">
+    <div class="card" id="bobPanel"></div>
+    <h3 class="sec">MEJORAS DE BOBBY</h3>
+    <div id="listaPla"></div>
+  </section>
+</main>
+
+<div id="toast"></div>
+
+
+<div id="ajustes">
+  <div class="caja">
+    <h3>AJUSTES</h3>
+    <div class="lin"><span>Sonido<small>efectos de la máquina</small></span>
+      <button class="sw2 on" id="ajSnd"></button></div>
+    <div class="lin"><span>Volumen</span><input type="range" id="ajVol" min="0" max="100" value="55"></div>
+    <div class="lin"><span>Animaciones<small>desactívalo si notas tirones</small></span>
+      <button class="sw2 on" id="ajAnim"></button></div>
+    <div class="lin"><span>Guía de aprendizaje<small>los avisos de los primeros minutos</small></span>
+      <button class="sw2 on" id="ajGuia"></button></div>
+    <button class="cerrar" id="ajOk">CERRAR</button>
+  </div>
+</div>
+
+<div id="info">
+  <div class="caja">
+    <div class="rot" id="ifRot"></div>
+    <div class="nom" id="ifNom"></div>
+    <div class="lem" id="ifTxt"></div>
+    <button id="ifOk">ENTENDIDO</button>
+  </div>
+</div>
+
+<div id="nueva">
+  <div class="caja">
+    <div class="rot">MÁQUINA DESBLOQUEADA</div>
+    <div class="nom" id="nvNom"></div>
+    <div class="lem" id="nvLem"></div>
+    <div class="sim" id="nvSim"></div>
+    <button id="nvOk">CONTINUAR</button>
+  </div>
+</div>
+
+<button id="menuB">←</button>
+<button id="devB">⚙</button>
+<div id="dev">
+  <h4>ESTADO</h4>
+  <pre id="devInfo"></pre>
+  <h4>FICHAS</h4>
+  <div class="row">
+    <button data-f="1000">+1 K</button><button data-f="1000000">+1 M</button>
+    <button data-f="1000000000">+1 B</button><button data-f="1000000000000">+1 T</button>
+  </div>
+  <div class="row"><button data-f="-1">VACIAR</button></div>
+  <h4>SUERTE</h4>
+  <div class="row">
+    <button data-s="1">+1</button><button data-s="-1">−1</button>
+    <button data-s="5">+5</button><button data-sset="35">TOPE (35)</button>
+  </div>
+  <h4>VELOCIDAD</h4>
+  <div class="row">
+    <button data-v="1">+1</button><button data-v="-1">−1</button>
+    <button data-v="5">+5</button><button data-vset="23">TOPE (23)</button>
+  </div>
+  <h4>NIVEL DE MÁQUINA (la abierta)</h4>
+  <div class="row">
+    <button data-m="1">+1</button><button data-m="-1">−1</button>
+    <button data-m="10">+10</button><button data-mxp="1">+1 XP</button>
+  </div>
+  <h4>DEUDA</h4>
+  <div class="row">
+    <button data-d="cifra">QUITAR 1 CIFRA</button><button data-d="mas">AÑADIR 1 CIFRA</button>
+    <button data-d="casi">DEJAR EN $9.999</button>
+  </div>
+  <h4>BOBBY</h4>
+  <div class="row">
+    <button data-bob="1">DAR / QUITAR BOBBY</button>
+    <button data-jk="1">JACKPOT EN LA ABIERTA</button>
+  </div>
+  <h4>COPIA DE SEGURIDAD</h4>
+  <div class="row">
+    <button data-exp="1">GENERAR CÓDIGO</button>
+    <button data-cop="1">COPIAR</button>
+    <button data-imp="1">RESTAURAR</button>
+  </div>
+  <textarea id="devSave" placeholder="pega aquí un código de partida y pulsa RESTAURAR"></textarea>
+  <h4>PARTIDA</h4>
+  <div class="row"><button class="rojo" data-r="1">REINICIAR TODO</button></div>
+  <button class="cerrar" id="devX">CERRAR</button>
+</div>
+
+<script>
+"use strict";
+/* ================= SONIDO =================
+   Todo sintetizado con Web Audio (sin archivos). Escala pentatónica de Do:
+   consonante y sin disonancias, que es lo que usan las máquinas reales. */
+const AU={
+ ctx:null,on:true,master:null,
+ NOTAS:[261.63,293.66,329.63,392.00,440.00,523.25,587.33,659.25,783.99,880.00,1046.50],
+ init(){
+  if(this.ctx)return;
+  try{this.ctx=new (window.AudioContext||window.webkitAudioContext)();
+   this.master=this.ctx.createGain();
+   this.master.gain.value=0.55;this.master.connect(this.ctx.destination);
+  }catch(e){this.on=false}},
+ despertar(){if(this.ctx&&this.ctx.state==="suspended")this.ctx.resume()},
+ t(){return this.ctx?this.ctx.currentTime:0},
+
+ tono(f,dur,{tipo="sine",vol=0.25,at=0.005,cuando=0,sweep=0}={}){
+  if(!this.on||!this.ctx)return;
+  const t0=this.t()+cuando;
+  const o=this.ctx.createOscillator(),g=this.ctx.createGain();
+  o.type=tipo;o.frequency.setValueAtTime(f,t0);
+  if(sweep)o.frequency.exponentialRampToValueAtTime(Math.max(40,f*sweep),t0+dur);
+  g.gain.setValueAtTime(0.0001,t0);
+  g.gain.exponentialRampToValueAtTime(vol,t0+at);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  o.connect(g);g.connect(this.master);o.start(t0);o.stop(t0+dur+0.02)},
+
+ click(vol=0.12,cuando=0,f=1800){
+  if(!this.on||!this.ctx)return;
+  const t0=this.t()+cuando;
+  const o=this.ctx.createOscillator(),g=this.ctx.createGain(),fl=this.ctx.createBiquadFilter();
+  fl.type="bandpass";fl.frequency.value=f;fl.Q.value=1.2;
+  o.type="square";o.frequency.value=f;
+  g.gain.setValueAtTime(vol,t0);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+0.028);
+  o.connect(fl);fl.connect(g);g.connect(this.master);o.start(t0);o.stop(t0+0.05)},
+
+ /* ---- eventos del juego ---- */
+ /* ticks del rodillo siguiendo la desaceleración: se van espaciando solos */
+ rodillo(dur,celdas){
+  if(!this.on||!this.ctx)return;
+  for(let k=1;k<=celdas;k++){
+   const p=k/celdas;
+   const t=(1-Math.pow(1-p,1/2.6))*dur/1000;   // inversa del easing
+   if(t<dur/1000)this.click(k>celdas-5?0.16:0.07,t,k>celdas-5?1500:2400)}},
+
+ /* cada rodillo que para suena un tono más agudo: anticipación ascendente */
+ para(j,total){
+  const n=this.NOTAS[Math.min(j+2,this.NOTAS.length-1)];
+  this.tono(n,0.13,{tipo:"triangle",vol:0.3});
+  this.click(0.2,0,700)},
+
+ /* casi lo logras: tono que sube y se corta en seco */
+ casi(){
+  this.tono(392,0.34,{tipo:"sawtooth",vol:0.16,sweep:1.6});
+  this.tono(784,0.12,{tipo:"sine",vol:0.1,cuando:0.30})},
+
+ /* premio real: arpegio ascendente + lluvia de monedas proporcional */
+ premio(mult){
+  const n=Math.max(3,Math.min(9,Math.round(2+Math.log2(mult+1))));
+  for(let i=0;i<n;i++)
+   this.tono(this.NOTAS[Math.min(i+2,this.NOTAS.length-1)],0.30,
+    {tipo:"triangle",vol:0.26,cuando:i*0.065});
+  const monedas=Math.min(26,Math.round(4+Math.log2(mult+1)*3));
+  for(let i=0;i<monedas;i++)this.click(0.10,0.12+i*0.042,1500+Math.random()*900)},
+
+ /* premio menor que la apuesta: NO se celebra */
+ /* premio que solo devuelve lo apostado: suena, pero no celebra */
+ flojo(){
+  this.tono(392,0.14,{tipo:"triangle",vol:0.22});
+  this.tono(523.25,0.16,{tipo:"triangle",vol:0.20,cuando:0.075});
+  this.click(0.12,0,2200)},
+
+ nada(){this.tono(147,0.10,{tipo:"sine",vol:0.06})},
+
+ /* JACKPOT: el premio máximo de la máquina. Campanas + acorde sostenido */
+ jackpot(){
+  if(!this.on||!this.ctx)return;
+  [0,3,5,7,10].forEach((k,i)=>{
+   this.tono(this.NOTAS[k],0.42,{tipo:"sine",vol:0.30,cuando:i*0.07});
+   this.tono(this.NOTAS[k]*2,0.24,{tipo:"sine",vol:0.10,cuando:i*0.07})});
+  [261.63,329.63,392.00,523.25].forEach(f=>
+   this.tono(f,0.72,{tipo:"triangle",vol:0.20,at:0.04,cuando:0.36}));
+  for(let i=0;i<34;i++)this.click(0.10,0.16+i*0.024,1300+Math.random()*1700);
+  this.tono(880,0.5,{tipo:"square",vol:0.045,cuando:0.36,sweep:1.5})},
+
+ /* premio grande (no máximo): fanfarria corta */
+ gordo(){
+  [0,3,5,7,9,10].forEach((k,i)=>
+   this.tono(this.NOTAS[k],0.55,{tipo:"triangle",vol:0.3,cuando:i*0.085}));
+  for(let i=0;i<40;i++)this.click(0.11,0.25+i*0.035,1400+Math.random()*1400)},
+
+ /* la máquina te muerde (moscas de El Huerto) */
+ malo(){
+  this.tono(196,0.4,{tipo:"sawtooth",vol:0.22,sweep:0.45});
+  this.tono(185,0.4,{tipo:"square",vol:0.1,sweep:0.45})},
+
+ moneda(){this.click(0.16,0,2600);this.tono(1046,0.07,{tipo:"sine",vol:0.13})},
+
+ compra(){
+  [0,2,4].forEach((k,i)=>this.tono(this.NOTAS[k+3],0.26,{tipo:"triangle",vol:0.26,cuando:i*0.07}));
+  for(let i=0;i<14;i++)this.click(0.09,0.05+i*0.04,1900+Math.random()*700)},
+
+ subeNivel(){
+  [2,4,6,9].forEach((k,i)=>this.tono(this.NOTAS[k],0.4,{tipo:"sine",vol:0.28,cuando:i*0.1}))},
+
+ pulsa(){this.click(0.14,0,900)},
+
+ /* como el premio, pero cayendo: arpegio descendente y monedas graves */
+ perdida(mag){
+  const n=Math.max(3,Math.min(8,Math.round(2+Math.log2(mag+1))));
+  for(let i=0;i<n;i++)
+   this.tono(this.NOTAS[Math.max(0,Math.min(this.NOTAS.length-1,n-i+1))],0.34,
+    {tipo:"sawtooth",vol:0.16,cuando:i*0.075,sweep:.82});
+  const mon=Math.min(22,Math.round(4+Math.log2(mag+1)*3));
+  for(let i=0;i<mon;i++)this.click(0.09,0.12+i*0.05,700-i*14+Math.random()*260)},
+
+ /* tensión: dos osciladores que suben juntos y se abren */
+ tension(dur){
+  if(!this.on||!this.ctx)return;
+  const t0=this.t();
+  [[110,660],[110.7,662]].forEach(([f,a],i)=>{
+   const o=this.ctx.createOscillator(),g=this.ctx.createGain();
+   o.type="sawtooth";
+   o.frequency.setValueAtTime(f,t0);
+   o.frequency.exponentialRampToValueAtTime(a,t0+dur);
+   g.gain.setValueAtTime(0.0001,t0);
+   g.gain.exponentialRampToValueAtTime(0.10,t0+dur*0.75);
+   g.gain.exponentialRampToValueAtTime(0.20,t0+dur);
+   o.connect(g);g.connect(this.master);o.start(t0);o.stop(t0+dur+0.05)});
+  // redoble que se acelera. Paso mínimo y tope de vueltas: sin ellos la
+  // serie converge antes de dur y el bucle no termina nunca.
+  let t=0,paso=0.17;
+  for(let i=0;i<48&&t<dur;i++){
+   this.click(0.05+0.10*(t/dur),t,300);
+   t+=paso;paso=Math.max(0.038,paso*0.90)}},
+
+ /* impacto: golpe grave con cuerpo */
+ impacto(){
+  if(!this.on||!this.ctx)return;
+  this.tono(58,1.8,{tipo:"square",vol:.30,at:.002});
+  this.tono(41,2.2,{tipo:"sine",vol:.26,at:.002});
+  this.tono(180,.35,{tipo:"sawtooth",vol:.20,sweep:.18});
+  const t0=this.t(),o=this.ctx.createOscillator(),g=this.ctx.createGain(),f=this.ctx.createBiquadFilter();
+  f.type="lowpass";f.frequency.setValueAtTime(2600,t0);
+  f.frequency.exponentialRampToValueAtTime(120,t0+.5);
+  o.type="square";o.frequency.value=90;
+  g.gain.setValueAtTime(.22,t0);g.gain.exponentialRampToValueAtTime(.0001,t0+.55);
+  o.connect(f);f.connect(g);g.connect(this.master);o.start(t0);o.stop(t0+.6)}
+};
+
+/* ================= LAS SIETE TRAGAPERRAS ================= */
+const MAQ=[
+{
+ /* 0 · EL SUELO: gratis, sin mueble. Enseña el bucle antes de arriesgar nada. */
+ nom:"EL SUELO",tipo:"suelo",rod:3,coste:0,desnuda:1,
+ desde:1,tope:4,vdesde:1,vtope:5,bobLento:8000,vLento:3200,vRapido:900,vFinal:620,abre:0,
+ sim:[{c:"\ud83d\uddde\ufe0f",n:"periódicos",premio:0,col:"#8a8478"},
+      {c:"\ud83d\uddd1\ufe0f",n:"bolsas",  premio:0,col:"#6f8577"},
+      {c:"\ud83d\udc00",n:"ratas",     premio:0,col:"#7a6a5a"},
+      {c:"\ud83e\ude99",n:"fichas",    premio:0,col:"#c9a227"}],
+ pares:[],suelo:{1:1,2:5,3:25},
+ estados:[[28,28,26,18],[22,21,19,38],[13,12,11,64],[7,7,6,80]],pasos:3,
+ lema:"Gratis. Rebusca hasta encontrar una ficha."
+},{
+ nom:"LA VIUDA",tipo:"clasica",rod:3,coste:10,
+ desde:1,tope:4,vdesde:1,vtope:6,bobLento:9000,vLento:3000,vRapido:400,vFinal:280,abre:10,
+ sim:[{c:"\u2764\ufe0f",n:"corazones",premio:10,col:"#b03a2e"},
+      {c:"\u2b50",n:"estrellas",premio:30,col:"#c9a227"},
+      {c:"\ud83d\udc8e",n:"diamantes",premio:50,col:"#5fd0e0"}],
+ pares:[{c:"\u2764\ufe0f",premio:1},{c:"\u2b50",premio:2}],
+ estados:[[50,40,10],[35,48,17],[20,52,28],[5,45,50],[1,19,80]],pasos:4,
+ lema:"Tres iguales. Dos corazones o dos estrellas ya pagan."
+},{
+ nom:"FRUTAS SALVAJES",tipo:"clasica",rod:4,coste:100,
+ desde:1,tope:6,vdesde:1,vtope:6,bobLento:11000,vLento:6000,vRapido:450,vFinal:310,abre:1000,
+ sim:[{c:"\ud83c\udf4c",n:"plátanos",premio:5, p4:25,  col:"#e8c547"},
+      {c:"\ud83c\udf47",n:"uvas",    premio:10,p4:50,  col:"#9b6bd6"},
+      {c:"\ud83c\udf4a",n:"naranjas",premio:25,p4:125, col:"#e08b3c"},
+      {c:"\ud83c\udf53",n:"fresas",  premio:50,p4:250, col:"#d8425e"}],
+ pares:[{c:"\ud83c\udf4c",premio:1}],
+ estados:[[50,30,15,5],[43,34,15,8],[26,42,16,16],[14,38,20,28],[6,26,21,47],[2,8,10,80]],pasos:4,
+ lema:"Cuatro rodillos. Solo el plátano paga en pareja."
+},{
+ /* 3 · ADYACENCIA OBLIGATORIA + SÍMBOLO QUE RESTA (Buffalo + tu fruta podrida) */
+ nom:"EL HUERTO",tipo:"adyacente",rod:5,coste:1000,
+ desde:4,tope:9,vdesde:3,vtope:8,bobLento:15000,vLento:7000,vRapido:500,vFinal:340,abre:100000,
+ sim:[{c:"\ud83c\udf3d",n:"maíz",    premio:25, col:"#e8c547"},
+      {c:"\ud83c\udf45",n:"tomates", premio:75, col:"#d8425e"},
+      {c:"\ud83c\udf44",n:"setas",   premio:250,col:"#c98a6b"},
+      {c:"\ud83e\udeb0",n:"moscas",  premio:0,  col:"#55705f",malo:true}],
+ pares:[],mult:{4:4,5:20},castigo:{2:-1,3:-10},
+ estados:[[38,22,10,30],[40,26,12,22],[38,32,15,15],[30,38,22,10],[18,40,36,6],[6,30,62,2]],pasos:4,
+ lema:"Deben salir SEGUIDAS. Las moscas te quitan fichas."
+},{
+ /* 4 · DOS FILAS: arriba el combo, abajo el multiplicador */
+ nom:"LA BARRA",tipo:"doble",rod:6,filas:2,coste:10000,
+ desde:6,tope:12,vdesde:6,vtope:11,bobLento:22000,vLento:6000,vRapido:450,vFinal:300,abre:25000000,
+ sim:[{c:"\ud83c\udf7a",n:"cañas",   premio:15, col:"#e8c547"},
+      {c:"\ud83c\udf78",n:"cócteles",premio:45, col:"#e0648a"},
+      {c:"\ud83e\udd43",n:"whiskys", premio:140,col:"#c98a3c"},
+      {c:"\ud83c\udf7e",n:"champán", premio:450,col:"#e8e2d0"}],
+ pares:[],
+ mult:[{c:"\u00d72",x:2,col:"#8f9c93"},{c:"\u00d75",x:5,col:"#c9a227"},
+       {c:"\u00d720",x:20,col:"#5fd0e0"}],
+ estados:[[70,22,7,1],[56,27,13,4],[46,26,18,10],[32,24,23,21],[18,18,26,38],[9,12,22,57],[4,6,10,80]],
+ estadosB:[[60,30,10],[80,17,3],[70,20,10],[55,22,23],[38,20,42],[20,15,65],[8,12,80]],
+ lema:"Arriba el combo. Abajo el multiplicador que se le aplica."
+},{
+ /* 5 · ESTRUCTURA DE PÓKER (Mega Joker / Jacks or Better) */
+ nom:"LA MANO",tipo:"poker",rod:5,coste:100000,
+ desde:9,tope:14,vdesde:9,vtope:14,bobLento:26000,vLento:6500,vRapido:450,vFinal:300,abre:90000000,
+ sim:[{c:"\u2663",n:"tréboles",premio:1,col:"#3d6b4d"},
+      {c:"\u2666",n:"rombos",  premio:1,col:"#b03a2e"},
+      {c:"\u2660",n:"picas",   premio:1,col:"#e8e2d0"},
+      {c:"\u2665",n:"copas",   premio:1,col:"#d8425e"},
+      {c:"\u265b",n:"coronas", premio:1,col:"#c9a227"}],
+ pares:[],
+ manos:{doblePareja:0.1,trio:0.5,full:3,poker:25,repoker:600},
+ estados:[[22,21,20,19,18],[30,22,19,16,13],[40,23,17,12,8],[52,22,14,8,4],[64,20,10,4,2],[78,13,6,2,1]],pasos:4,
+ lema:"Manos de póker. Cuanto más domina un palo, mejores manos salen."
+},{
+ /* 6 · SOLO CUENTAN LOS EXTREMOS (Starburst invertido) */
+ nom:"MAREA ALTA",tipo:"extremos",rod:5,coste:1000000,
+ desde:12,tope:17,vdesde:12,vtope:17,bobLento:30000,vLento:6000,vRapido:400,vFinal:280,abre:10000000000,
+ sim:[{c:"\ud83c\udf11",n:"lunas negras",premio:0.2,  col:"#55705f"},
+      {c:"\ud83c\udf13",n:"cuartos",     premio:12,   col:"#9b6bd6"},
+      {c:"\ud83c\udf15",n:"lunas llenas",premio:150,  col:"#e8e2d0"}],
+ pares:[],centro:25,
+ estados:[[86,12,2],[78,18,4],[66,26,8],[50,35,15],[30,42,28],[8,40,52]],pasos:4,
+ lema:"Solo importan el primer y el último rodillo."
+},{
+ /* 7 · TODOS DISTINTOS */
+ nom:"EL DESCARTE",tipo:"distintos",rod:5,coste:100000000,
+ desde:15,tope:21,vdesde:15,vtope:20,bobLento:34000,vLento:5000,vRapido:350,vFinal:250,abre:1300000000000,
+ sim:[{c:"\ud83d\udd34",n:"rojas",   premio:0,col:"#b03a2e"},
+      {c:"\ud83d\udfe1",n:"amarillas",premio:0,col:"#c9a227"},
+      {c:"\ud83d\udfe2",n:"verdes",  premio:0,col:"#4ea86b"},
+      {c:"\ud83d\udd35",n:"azules",  premio:0,col:"#5fd0e0"},
+      {c:"\u26ab",n:"negras",        premio:0,col:"#8f9c93"}],
+ pares:[],distintos:{4:1,5:300},iguales:{5:15},
+ estados:[[62,20,10,5,3],[54,22,12,8,4],[46,23,14,11,6],[38,24,16,13,9],[29,24,19,16,12],[21,20,20,20,19]],pasos:4,
+ lema:"Aquí ganas cuando NADA coincide. Cinco distintos."
+}];
+
+/* Por ahora el casino acaba en LA BARRA: al reventarla se llega a otra parte
+   del casino, que está por escribir. Las tres siguientes quedan aquí guardadas
+   y vuelven con solo cambiar este corte. */
+const RESERVA=MAQ.splice(5);
+
+/* ================= RESOLUCIÓN DE PREMIOS ================= */
+function cuenta(a){const m={};a.forEach(x=>m[x]=(m[x]||0)+1);return m}
+
+function pago(m,a){
+ const c=cuenta(a);
+ const nom=x=>m.sim.find(s=>s.c===x);
+
+ if(m.tipo==="doble"){
+  const arr=a.slice(0,3), aba=a.slice(3);
+  const mm=m.mult.find(x=>aba.every(y=>y===x.c));
+  const f=mm?mm.x:1, top=m.sim[m.sim.length-1];
+  const base=m.sim.find(x=>arr.every(y=>y===x.c));
+  if(base)return{p:base.premio*f,
+   n:"tres "+base.n+(f>1?"  ×"+f:""),
+   big:base.premio>=140||f>=5,
+   jack:base.c===top.c&&f===20};
+  // dos iguales pagan la quinta parte. El champán solo paga de tres en tres
+  const cA=cuenta(arr);
+  let par=null;
+  for(const x of m.sim)if(x.c!==top.c&&(cA[x.c]||0)===2)par=x;
+  if(par)return{p:par.premio/5*f,
+   n:"dos "+par.n+(f>1?"  ×"+f:""),
+   big:false};
+  return{p:0,n:"",big:false}}
+
+ if(m.tipo==="suelo"){
+  const f=m.sim[m.sim.length-1];                 // la ficha
+  const k=c[f.c]||0;
+  if(k>=1)return{p:m.suelo[Math.min(k,3)],
+   n:k===1?"una ficha":k===2?"dos fichas":"TRES FICHAS",
+   big:k>=3,jack:k>=3};
+  return{p:0,n:"",big:false}}
+
+ if(m.tipo==="clasica"){
+  for(const s of m.sim){const k=c[s.c]||0;
+   if(k>=3){const top=m.sim[m.sim.length-1];
+    const cuatro=(k>=4&&s.p4);
+    return{p:cuatro?s.p4:s.premio,
+           n:(k>3?"CUATRO ":"tres ")+s.n,
+           big:(cuatro?s.p4:s.premio)>=25,
+           jack:s.c===top.c&&k>=m.rod}}}
+  for(const q of (m.pares||[]))if((c[q.c]||0)===2)
+   return{p:q.premio,n:"pareja de "+nom(q.c).n,big:false};
+  return{p:0,n:"",big:false}}
+
+ if(m.tipo==="adyacente"){
+  const malo=m.sim.find(s=>s.malo);
+  const km=c[malo.c]||0;
+  const cast=km>=3?m.castigo[3]:km===2?m.castigo[2]:0;
+  let mejor=null;
+  for(const s of m.sim){
+   if(s.malo)continue;
+   let run=0,max=0;
+   a.forEach(x=>{run=(x===s.c)?run+1:0;if(run>max)max=run});
+   if(max>=3){const p=s.premio*(m.mult[max]||1);
+    const top=m.sim.filter(x=>!x.malo).pop();
+    if(!mejor||p>mejor.p)mejor={p:p,n:max+" "+s.n+" seguidas",big:max>=4||s.premio>=120,
+                                jack:max===5&&s.c===top.c}}}
+  // el premio y el castigo conviven: se hace la resta, no gana uno solo
+  const total=(mejor?mejor.p:0)+cast;
+  if(!mejor&&!cast)return{p:0,n:"",big:false};
+  if(mejor&&cast)return{p:total,
+   n:mejor.n+"  \u2212 "+(km>=3?km+" moscas":"dos moscas"),
+   big:total>0&&mejor.big,malo:total<0,jack:false};
+  if(mejor)return mejor;
+  return{p:cast,n:km>=3?km+" MOSCAS":"dos moscas",big:km>=3,malo:true}}
+
+ if(m.tipo==="familia"){
+  for(const s of m.sim){if((c[s.c]||0)>=3){const top=m.sim[m.sim.length-1];
+   return{p:s.premio,n:"tres "+s.n,big:s.premio>=150,jack:s.c===top.c}}}
+  const fam=m.sim.filter(s=>s.fam).map(s=>s.c);
+  if(a.every(x=>fam.includes(x)))return{p:m.mezcla,n:"barras mezcladas",big:false};
+  return{p:0,n:"",big:false}}
+
+ if(m.tipo==="poker"){
+  const k=Object.values(c).sort((x,y)=>y-x);
+  const M=m.manos;
+  if(k[0]===5)return{p:M.repoker,n:"REPÓKER",big:true,jack:true};
+  if(k[0]===4)return{p:M.poker,n:"PÓKER",big:true};
+  if(k[0]===3&&k[1]===2)return{p:M.full,n:"FULL",big:true};
+  if(k[0]===3)return{p:M.trio,n:"trío",big:false};
+  if(k[0]===2&&k[1]===2)return{p:M.doblePareja,n:"doble pareja",big:false};
+  return{p:0,n:"",big:false}}
+
+ if(m.tipo==="extremos"){
+  if(a[0]!==a[a.length-1])return{p:0,n:"",big:false};
+  const s=nom(a[0]);
+  const medio=a.slice(1,-1);
+  if(medio.every(x=>x===a[0])){const top=m.sim[m.sim.length-1];
+   return{p:s.premio*m.centro,n:"MAREA COMPLETA de "+s.n,big:true,jack:s.c===top.c}}
+  return{p:s.premio,n:"extremos de "+s.n,big:s.premio>=1500}}
+
+ if(m.tipo==="distintos"){
+  const d=Object.keys(c).length;
+  if(d===5)return{p:m.distintos[5],n:"CINCO DISTINTOS",big:true,jack:true};
+  if(d===4)return{p:m.distintos[4],n:"cuatro distintos",big:false};
+  if(d===1)return{p:m.iguales[5],n:"CINCO IGUALES",big:true};
+  return{p:0,n:"",big:false}}
+
+ return{p:0,n:"",big:false}}
+
+const S={deuda:5000000000000000000n,pagado:0n,fichas:0,nivel:1,vnivel:1,
+ maq:0,total:0,tir:0,up:{suerte:0,vel:0,ritmo:0,tanda:0,cadena:0,bobby:0},
+ mNivel:[1,1,1,1,1,1,1,1],mXp:[0,0,0,0,0,0,0,0],v:{},jk:{},bob:{maq:null,bote:0,restan:0,t:0,prox:null}};
+
+/* ============ ESTADO DERIVADO ============ */
+/* La ficha del suelo no es un emoji: se dibuja. Seis rayas repartidas exactas. */
+const FICHA_C="\ud83e\ude99";
+const _fcache={};
+function ficha(ancho){
+ if(_fcache[ancho])return _fcache[ancho];
+ const col="#e0384a", cl="#ec7684", os="#8b2230", bd="#5e1720";
+ const r=37,n=6,fr=.6,paso=2*Math.PI*r/n;
+ const dash=(paso*fr).toFixed(2)+" "+(paso*(1-fr)).toFixed(2);
+ return _fcache[ancho]=`<svg viewBox="0 0 100 100" style="width:${ancho};height:auto;display:block">
+ <defs><radialGradient id="fq_${ancho.replace(/[^a-z0-9]/gi,"")}" cx="34%" cy="28%" r="76%">
+  <stop offset="0%" stop-color="${cl}"/><stop offset="58%" stop-color="${col}"/>
+  <stop offset="100%" stop-color="${os}"/></radialGradient></defs>
+ <circle cx="50" cy="50" r="45" fill="#fff" stroke="${bd}" stroke-width="2"/>
+ <circle cx="50" cy="50" r="${r}" fill="none" stroke="url(#fq_${ancho.replace(/[^a-z0-9]/gi,"")})" stroke-width="15"
+  stroke-dasharray="${dash}" transform="rotate(15 50 50)"/>
+ <circle cx="50" cy="50" r="30" fill="url(#fq_${ancho.replace(/[^a-z0-9]/gi,"")})" stroke="${os}" stroke-width="1.5"/>
+ <ellipse cx="42" cy="30" rx="20" ry="11" fill="#fff" opacity=".28"/>
+ </svg>`}
+const dib=(c,ancho,linea)=>c!==FICHA_C?c
+ :(linea?`<span style="display:inline-block;width:${ancho};vertical-align:middle">${ficha("100%")}</span>`
+        :ficha(ancho));
+
+const todos=m=>m.sim;
+const GAN=()=>S.total;   // fichas ganadas de por vida: lo que desbloquea
+const anclada=m=>S.nivel>=m.tope;
+const bonoNivel=i=>1+0.30*(S.mNivel[i]-1);
+const xpNec=n=>Math.round(8*Math.pow(1.7,n-1));
+
+/* Suerte global con TOPE ABSOLUTO por máquina, como en Scritchy Scratchy:
+   cada máquina mejora entre m.desde y m.tope y ahí se ancla para siempre.
+   Subir suerte mejora a la vez todas las que aún no han topado, las estés
+   jugando o no. */
+function pct(m){
+ const E=m.estados;
+ const t=Math.max(0,Math.min(1,(S.nivel-m.desde)/(m.tope-m.desde)));
+ const x=t*(E.length-1),lo=Math.floor(x),hi=Math.min(E.length-1,lo+1),f=x-lo;
+ return E[lo].map((v,i)=>v+(E[hi][i]-v)*f)}
+function probs(m){
+ const v=pct(m),T=v.reduce((a,b)=>a+b,0),o={};
+ m.sim.forEach((s,i)=>o[s.c]=v[i]/T);
+ return o}
+/* segunda fila: los multiplicadores tienen su propia tabla */
+function pctB(m){
+ const E=m.estadosB;
+ const t=Math.max(0,Math.min(1,(S.nivel-m.desde)/(m.tope-m.desde)));
+ const x=t*(E.length-1),lo=Math.floor(x),hi=Math.min(E.length-1,lo+1),f=x-lo;
+ return E[lo].map((v,i)=>v+(E[hi][i]-v)*f)}
+function probsB(m){
+ const v=pctB(m),T=v.reduce((a,b)=>a+b,0),o={};
+ m.mult.forEach((s,i)=>o[s.c]=v[i]/T);
+ return o}
+
+/* RTP por simulación: adyacencia, manos de póker y "todos distintos" no tienen
+   fórmula cerrada razonable. Se cachea por máquina y nivel de suerte. */
+const _rtpCache={};
+const _elige=p=>{const ks=Object.keys(p);let x=Math.random();
+ for(const k of ks){x-=p[k];if(x<=0)return k}return ks[0]};
+function girarCon(m,p){
+ if(m.filas===2){const b=probsB(m);
+  return [_elige(p),_elige(p),_elige(p),_elige(b),_elige(b),_elige(b)]}
+ return Array.from({length:m.rod},()=>_elige(p))}
+const girar=m=>girarCon(m,probs(m));
+function rtp(m){
+ const k=MAQ.indexOf(m)+":"+S.nivel;
+ if(_rtpCache[k]!==undefined)return _rtpCache[k];
+ const p=probs(m);let t=0;const N=30000;
+ for(let i=0;i<N;i++)t+=pago(m,girarCon(m,p)).p;
+ return _rtpCache[k]=t/N}
+
+/* Un escalón más allá del tope: la máquina da un último tirón de velocidad */
+const VEL=m=>{
+ if(S.vnivel>m.vtope)return m.vFinal;
+ const t=Math.max(0,Math.min(1,(S.vnivel-m.vdesde)/(m.vtope-m.vdesde)));
+ return Math.round(m.vLento+(m.vRapido-m.vLento)*t)};
+const vAnclada=m=>S.vnivel>m.vtope;
+const SNAP=140,LECTURA=170;
+
+/* ---------- BOBBY BRAZOS LARGOS ---------- */
+const BOBBY_ABRE=25000;                 // fichas acumuladas que lo desbloquean
+const BOBBY_PRECIO=20000;               // lo que cuesta alquilarlo en MEJORAS
+const TANDAS=[5,10,15,20,35,50];
+const tandaN=()=>TANDAS[Math.min(TANDAS.length-1,S.up.tanda)];
+/* La muñeca de Bobby se mejora igual que la tuya: un solo nivel, pero cada
+   máquina tiene su propio compás. En las tochas tarda más aunque esté a tope. */
+const RITMOS=[1,0.66,0.33,0.14,0.07,0.033];
+const ritmoDe=(m,k)=>{
+ const f=RITMOS[Math.min(RITMOS.length-1,Math.max(0,k))];
+ if(!m)return Math.round(15000*f);
+ // por rápido que se ponga, tarda vez y media lo que tardas tú a tope
+ const piso=Math.round((m.vFinal+SNAP+LECTURA)*1.5);
+ return Math.max(piso,Math.round(m.bobLento*f))};
+const maqBob=()=>S.bob&&S.bob.maq!=null?MAQ[S.bob.maq]:null;
+const ritmoBob=()=>ritmoDe(maqBob(),S.up.ritmo);
+const sigRitmo=()=>ritmoDe(maqBob(),S.up.ritmo+1);
+const rAnclada=()=>S.up.ritmo>=RITMOS.length-1;
+/* desbloqueado = ya salió en la barra · hay = además lo has comprado */
+const bobbyAbierto=()=>GAN()>=BOBBY_ABRE;
+const hayBobby=()=>!!S.up.bobby;
+/* se pone solo en la máquina más cara donde ya hayas sacado un jackpot */
+const bobDestino=()=>{let d=null;
+ for(let i=0;i<MAQ.length;i++)if(S.jk[i]&&GAN()>=MAQ[i].abre)d=i;
+ return d};
+
+/* la barra de arriba cuenta máquinas y a Bobby por igual */
+const HITOS=MAQ.map(m=>({abre:m.abre,nom:m.nom}))
+ .concat([{abre:BOBBY_ABRE,nom:"BOBBY BRAZOS LARGOS"}])
+ .sort((a,b)=>a.abre-b.abre);
+
+const BOBUP=[
+ {id:"tanda",n:"Brazos más largos",
+  d:()=>`Cada tanda son ${tandaN()} tiradas → ${TANDAS[Math.min(TANDAS.length-1,S.up.tanda+1)]}`,
+  c:k=>Math.round(5e5*Math.pow(4.5,k)),max:TANDAS.length-1},
+ {id:"ritmo",n:"Muñeca engrasada",
+  d:()=>{const m=maqBob();
+   const q=m?` en ${m.nom}`:"";
+   return rAnclada()?`Bobby ya tira todo lo rápido que puede`
+    :`Bobby tira más rápido${q}: ${(ritmoBob()/1000).toFixed(1)}s → ${(sigRitmo()/1000).toFixed(1)}s`},
+  c:k=>Math.round(2.5e5*Math.pow(5,k)),max:RITMOS.length-1},
+ {id:"cadena",n:"No sabe parar",
+  d:()=>S.up.cadena?"Encadena tandas él solo":"Al acabar una tanda empieza otra sin que se lo digas",
+  c:k=>2.5e8,max:1}
+];
+
+const MEJ=[
+ {id:"suerte",n:"Instinto",d:()=>"Mejora las probabilidades de todas las máquinas",
+  c:k=>Math.round((k<5?200:400)*Math.pow(5,k)),max:34},
+ {id:"vel",n:"Muñeca rápida",d:()=>{const m=MAQ[S.maq],a=VEL(m);S.vnivel++;const b=VEL(m);S.vnivel--;
+   return vAnclada(m)?`Las máquinas giran más rápido · ${m.nom} ya está al máximo`
+    :`Las máquinas giran más rápido · ${m.nom}: ${(a/1000).toFixed(1)}s → ${(b/1000).toFixed(1)}s`},
+  c:k=>Math.round(400*Math.pow(4,k)),max:22},
+ {id:"bobby",n:"Bobby Brazos Largos",
+  d:()=>"Alquilas al gorila del casino: tira por ti y guarda lo que saca",
+  c:k=>BOBBY_PRECIO,max:1,ver:()=>bobbyAbierto()}
+];
+const verMej=M=>!M.ver||M.ver();
+
+function fmt(n){
+ if(typeof n==="bigint")return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,".");
+ if(n<1e6)return Math.floor(n).toLocaleString("es");
+ const u=["M","B","T","Q"];let i=-1,x=n;while(x>=1e6&&i<3){x/=1e6;i++}
+ return x.toFixed(2).replace(".",",")+u[i]}
+const VACIO={style:{width:"",setProperty(){}},classList:{add(){},remove(){},contains:()=>false},
+ children:[],innerHTML:"",textContent:"",hidden:false,disabled:false,
+ appendChild(){},addEventListener(){},onclick:null};
+const $=s=>document.querySelector(s)||VACIO;
+
+/* ============ GIRO INDEPENDIENTE POR MÁQUINA ============ */
+const spin=MAQ.map(()=>null);
+const ocupada=i=>spin[i]!==null;
+const tParada=(sp,j)=>sp.t0+sp.T*0.55+j*sp.T*(0.44/Math.max(1,sp.N-1))+SNAP;
+const tFin=sp=>tParada(sp,sp.N-1)+LECTURA;
+
+function tirar(i){
+ const m=MAQ[i];
+ if(ocupada(i)||S.fichas<m.coste||GAN()<m.abre)return false;
+ S.fichas-=m.coste;S.tir++;
+ const a=girar(m),P=pago(m,a),gan=P.p*(m.coste||1)*bonoNivel(i);
+ spin[i]={t0:Date.now(),T:VEL(m),N:m.rod,a:a,gan:gan,P:P,cobrado:false};
+ if(i===S.maq)montar();
+ pinta();
+ return true}
+
+function resolver(i){
+ const sp=spin[i];if(!sp||sp.cobrado)return;
+ sp.cobrado=true;
+ S.fichas=Math.max(0,S.fichas+sp.gan);
+ if(sp.P&&sp.P.jack&&!S.jk[i])S.jk[i]=1;
+ if(sp.gan>0){
+  const antes=MAQ.filter(x=>GAN()>=x.abre).length;
+  S.total+=sp.gan;
+  if(MAQ.filter(x=>GAN()>=x.abre).length>antes)anunciar(antes);
+  S.mXp[i]++;
+  if(S.mXp[i]>=xpNec(S.mNivel[i])){S.mXp[i]=0;S.mNivel[i]++;delete _maxCache[i];delete _minCache[i];
+   if(i===S.maq){AU.subeNivel();toast(MAQ[i].nom+" SUBE A NIVEL "+S.mNivel[i],"#fff");
+    const n=document.querySelector(".estado .izq");
+    if(n&&n.classList){n.classList.remove("sube");void n.offsetWidth;n.classList.add("sube")}}}}}
+
+/* ============ RODILLOS ============ */
+const LARGO=18;
+function celda(m,c,baja){
+ const lista=(baja&&m.mult)?m.mult:m.sim;
+ const s=lista.find(x=>x.c===c)||m.sim.find(x=>x.c===c)||(m.mult||[]).find(x=>x.c===c);
+ return `<b style="color:${s?s.col:"#fff"}">${dib(c,"66%")}</b>`}
+/* tent = símbolo que completaría la jugada; se cuela justo antes del resultado
+   para que el jugador lo vea pasar de largo */
+function tiraHTML(m,fin,tent,baja){
+ const juego=(baja&&m.mult)?m.mult:m.sim;
+ let h="";
+ for(let k=0;k<LARGO-1;k++){
+  let c=juego[Math.floor(Math.random()*juego.length)].c;
+  if(tent&&tent!==fin&&(k===LARGO-2||k===LARGO-4))c=tent;
+  h+=celda(m,c)}
+ return h+celda(m,fin,baja)}
+function tentador(m,a,j){
+ // con dos filas, cada una tiene sus propios símbolos: no se pueden mezclar
+ const ini=(m.filas===2&&j>=3)?3:0;
+ if(j<=ini)return null;
+ const c={};for(let k=ini;k<j;k++)c[a[k]]=(c[a[k]]||0)+1;
+ let mej=null,n=0;
+ for(const k in c)if(c[k]>n){n=c[k];mej=k}
+ const dentro=j-ini;
+ return (n>=2||(dentro>=2&&n>=1))?mej:null}
+/* ---------- BOMBILLAS DEL MARCO ---------- */
+let _bombs=[],_luzT=null;
+function ponerBombillas(){
+ const m=$("#maq");if(!m||m===VACIO)return;
+ m.querySelectorAll(".bomb").forEach(b=>b.remove());
+ const N=8,M=4;
+ for(let i=0;i<N;i++)["top","bottom"].forEach(l=>{
+  const b=document.createElement("div");b.className="bomb";
+  b.style.left="calc("+(3+i*94/(N-1))+"% - 3.5px)";b.style[l]="-5px";m.appendChild(b)});
+ // las laterales van como siempre; solo LA BARRA las apartá de su línea,
+ // que ahí no está a media altura sino sobre la fila de arriba
+ const alturas=MAQ[S.maq].filas===2?[16,58,82]:[100/3,200/3];
+ alturas.forEach(y=>["left","right"].forEach(l=>{
+  const b=document.createElement("div");b.className="bomb";
+  b.style.top="calc("+y.toFixed(2)+"% - 3.5px)";b.style[l]="-5px";m.appendChild(b)}));
+ _bombs=[...m.querySelectorAll(".bomb")]}
+
+function apagar(){_bombs.forEach(b=>{b.classList.remove("on");b.classList.remove("jack")})}
+function luces(modo,dur){
+ clearInterval(_luzT);apagar();
+ if(!_bombs.length)return;
+ let k=0;
+ const paso={
+  giro:()=>{_bombs.forEach((b,i)=>b.classList.toggle("on",(i+k)%6===0))},      // una de cada seis, girando
+  premio:()=>{_bombs.forEach((b,i)=>b.classList.toggle("on",(i+k)%3===0))},    // persecución
+  gordo:()=>{_bombs.forEach((b,i)=>b.classList.toggle("on",(i+k)%2===0))},     // alternas rápidas
+  jack:()=>{const t=k%2===0;_bombs.forEach((b,i)=>{
+    b.classList.toggle("jack",t);b.classList.toggle("on",!t)})}                // todas, blanco y oro
+ }[modo];
+ if(!paso)return;
+ paso();k++;
+ const vel={giro:190,premio:110,gordo:80,jack:100}[modo];
+ _luzT=setInterval(()=>{paso();k++},vel);
+ if(dur)setTimeout(()=>{if(_luzT)clearInterval(_luzT);apagar()},dur)}
+
+function medir(){
+ document.querySelectorAll(".rod").forEach(r=>{
+  const h=r.clientHeight;if(h)r.style.setProperty("--h",h+"px")});
+ // la línea de pago necesita saber cuánto mide la fila de arriba
+ const p=document.querySelector("#rodillos .rod");
+ const m=$("#maq");
+ if(p&&m&&m!==VACIO&&p.clientHeight)m.style.setProperty("--h1",p.clientHeight+"px")}
+
+function montar(){
+ const m=MAQ[S.maq],sp=spin[S.maq],now=Date.now();
+ const idx=Array.from({length:m.rod},(_,k)=>k);
+ const fin=sp?sp.a:idx.map(k=>m.sim[k%m.sim.length].c);
+ const celdaHTML=j=>{
+  const parado=!sp||now>=tParada(sp,j);
+  const tent=sp?tentador(m,sp.a,j):null;
+  return `<div class="rod"><div class="tira" style="transform:translateY(calc(var(--h) * ${parado?-(LARGO-1):0}))">${tiraHTML(m,fin[j],tent,m.filas===2&&j>=3)}</div></div>`};
+ const dos=m.filas===2;
+ $("#maq").classList.toggle("dosfilas",!!dos);
+ $("#rodillos2").hidden=!dos;
+ $("#rodillos").innerHTML=(dos?idx.slice(0,3):idx).map(celdaHTML).join("");
+ if(dos)$("#rodillos2").innerHTML=idx.slice(3).map(celdaHTML).join("");
+ medir();ponerBombillas();
+ if(!sp)return;
+ idx.forEach(j=>{
+  const queda=tParada(sp,j)-SNAP-now;
+  if(queda<=0)return;
+  const t=document.querySelectorAll(".maq .tira")[j];if(!t)return;
+  t.style.setProperty("--d",queda+"ms");
+  t.classList.add("blur");
+  AU.rodillo(queda,LARGO-1);
+  if(j===0&&!m.desnuda)luces("giro");
+  requestAnimationFrame(()=>{if(spin[S.maq]!==sp)return;
+   t.classList.add("mov");
+   t.style.transform=`translateY(calc(var(--h) * ${-(LARGO-1)}))`});
+  setTimeout(()=>t.classList.remove("blur"),Math.max(0,queda*0.55));
+  setTimeout(()=>{
+   if(spin[S.maq]!==sp)return;
+   AU.para(j,m.rod);
+   // El "casi" solo cuenta si la jugada acabó SIN premio y ese símbolo
+   // habría pagado. Si has ganado algo, manda el sonido del premio.
+   if(sp.P.p>0)return;
+   const tt=tentador(m,sp.a,j);
+   if(!tt||tt===sp.a[j])return;
+   const alt=sp.a.slice();alt[j]=tt;
+   if(pago(m,alt).p<=0)return;
+   const r=document.querySelectorAll(".maq .rod")[j];
+   if(r){r.classList.remove("casi");void r.offsetWidth;r.classList.add("casi")}
+   if(j===m.rod-1)AU.casi()
+  },queda)})}
+
+/* ============ PINTADO ============ */
+function pintaTop(p){
+ const d=S.deuda.toString(),c=d.length;
+ // en rojo, tantas cifras como tenga tu total de fichas: es hasta dónde alcanzas
+ const alc=Math.max(1,Math.min(c,Math.floor(S.total>0?Math.log10(S.total):0)+1));
+ const cab=d.slice(0,c-alc),col=d.slice(c-alc);
+ const sep=x=>x.replace(/\B(?=(\d{3})+(?!\d))/g,".");
+ let txt;
+ if(S.deuda<=0n)txt='<span style="color:var(--oro)">$0 — ERES LIBRE</span>';
+ else{
+  const t=sep(d),puntos=t.length-d.length;               // cuántos puntos se han metido
+  const corte=t.length-alc-Math.floor((alc-1)/3);         // dónde empieza la parte roja
+  txt="$"+t.slice(0,corte)+'<span class="cola">'+t.slice(corte)+"</span>";
+ }
+ if($("#cifra").innerHTML!==txt)$("#cifra").innerHTML=txt;
+ if(p){$("#cifra").classList.remove("p");void $("#cifra").offsetWidth;$("#cifra").classList.add("p")}
+
+ // la barra dorada mide la deuda pagada hacia el siguiente desbloqueo
+ const sig=HITOS.find(m=>GAN()<m.abre);
+ if(sig){
+  const ant=HITOS.filter(m=>GAN()>=m.abre).pop();
+  const base=ant?ant.abre:0;
+  const prog=sig.abre<=base?0:Math.max(0,Math.min(1,(GAN()-base)/(sig.abre-base)));
+  $("#pbar").style.width=(prog*100).toFixed(2)+"%";
+  $("#cifras").textContent=c+" CIFRAS";
+  $("#hito").textContent="SIGUIENTE DESBLOQUEO";
+  $("#cnt").textContent=fmt(GAN())+" / "+fmt(sig.abre);
+ }else{
+  $("#pbar").style.width="100%";
+  $("#cifras").textContent=S.deuda>0n?c+" CIFRAS":"";
+  $("#hito").textContent=S.deuda>0n?"TODO DESBLOQUEADO":"LIBRE";
+  $("#cnt").textContent=S.deuda>0n?fmt(GAN())+" fichas":"";
+ }}
+
+/* ---------- REVELADO PROGRESIVO ----------
+   Cada pieza aparece cuando empieza a tener sentido, no antes. */
+const FASES=[
+ {id:"fichas", el:"#barraF",      ok:()=>S.total>0},
+ {id:"maqs",   el:"#sw",          ok:()=>MAQ.filter(m=>GAN()>=m.abre).length>1},
+ {id:"desb",   el:"#bDesb",       ok:()=>MAQ.filter(m=>GAN()>=m.abre).length>1},
+ {id:"bobby",el:"#tabPla",ok:()=>hayBobby()},
+ {id:"mejoras",el:"#tabMej",      ok:()=>S.fichas>=MEJ[0].c(S.up.suerte)||S.up.suerte>0},
+ {id:"suerte", el:"#barraF .suerte",ok:()=>S.up.suerte>0},
+ {id:"nivel",  el:"#bNivel",      ok:()=>S.mNivel.some(n=>n>1)}
+];
+function revelar(){
+ FASES.forEach(f=>{
+  const e=document.querySelector(f.el);
+  if(!e)return;
+  if(S.v[f.id]){e.classList.remove("oculto");return}
+  if(f.ok()){
+   S.v[f.id]=1;
+   e.classList.remove("oculto");
+   if(S.anim!==0){e.classList.remove("nace");void e.offsetWidth;e.classList.add("nace")}
+   if(f.id==="mejoras")setTimeout(()=>informar("",
+    "MEJORAS DESBLOQUEADAS",
+    "Ahora puedes mejorar la suerte de tus tragaperras, aumentar la velocidad de los rodillos "
+   +"y puede que desbloquees más mejoras.<br><br>"
+   +"<b>El dinero que gastes en mejoras es el dinero que se resta de tu deuda.</b>"),700);
+   guardar();
+  }else e.classList.add("oculto")});
+ // Bobby se desbloquea como una máquina más, pero hay que comprarlo
+ if(!S.v.bobDesb&&bobbyAbierto()){
+  S.v.bobDesb=1;guardar();AU.jackpot();
+  setTimeout(()=>informar("","BOBBY BRAZOS LARGOS",
+   "El gorila del casino alquila sus brazos. Tira por ti mientras tú haces otra cosa "
+  +"y guarda lo que saca en un bote.<br><br>"
+  +"<b>Está en MEJORAS.</b> Como todo lo que compras ahí, lo que pagues por él "
+  +"se descuenta de tu deuda."),700)}}
+
+/* una línea que dice qué hacer, y calla en cuanto sobra */
+function guiar(){
+ const g=$("#guia");
+ if(S.guia===0){g.textContent="";return}
+ let t="";
+ if(MAQ.filter(m=>GAN()>=m.abre).length>1){       // ya hay casino abierto
+  if(!S.v.finGuia){S.v.finGuia=1;guardar()}
+  t="";
+ }else if(S.total===0)      t="Estás encerrado aquí abajo. Rebusca en el suelo.";
+ else if(S.total<3)         t="Las fichas pagan. La basura no.";
+ else                       t="Junta 10 fichas y podrás sentarte en una máquina.";
+ g.textContent=t}
+
+function pinta(){
+ const txtF=fmt(S.fichas),elF=$("#vF");
+ if(elF.textContent!==txtF){
+  elF.textContent=txtF;
+  elF.classList.remove("sube");void elF.offsetWidth;elF.classList.add("sube")}
+ $("#vN").textContent=S.nivel;
+
+ // selector: las desbloqueadas + la siguiente como incógnita
+ const abiertas=MAQ.filter(m=>GAN()>=m.abre).length;
+ const visibles=Math.min(MAQ.length,abiertas+1);
+ $("#sw").hidden=visibles<2;
+ if($("#sw").children.length!==visibles){
+  $("#sw").innerHTML="";
+  for(let k=0;k<visibles;k++){const b=document.createElement("button");
+   b.onclick=()=>{if(GAN()<MAQ[k].abre)return;S.maq=k;
+    if(_destacar===k)_destacar=null;held=false;montar();pinta();verPestana(k)};
+   $("#sw").appendChild(b)}}
+ [...$("#sw").children].forEach((b,k)=>{
+  const bloq=GAN()<MAQ[k].abre;
+  b.className=(S.maq===k?"on":"")+(bloq?" bloq":"")+(_destacar===k?" nueva":"");
+  b.innerHTML=bloq?'? <span style="opacity:.75;letter-spacing:0">'+fmt(MAQ[k].abre)+'</span>'
+   :MAQ[k].nom+`<span class="girando${ocupada(k)?" on":""}"></span>`
+    +(hayBobby()&&S.bob&&S.bob.maq===k?'<span class="rob"></span>':"")});
+
+ // una partida guardada puede apuntar a una máquina que ya no está
+ if(!MAQ[S.maq]||GAN()<MAQ[S.maq].abre)S.maq=0;
+ const m=MAQ[S.maq],i=S.maq,P=probs(m);
+ $("#mNom").innerHTML=m.nom
+  +` <span style="color:var(--crema);font-size:9px">Nv.${S.mNivel[i]}</span>`
+  +(bonoNivel(i)>1?` <span style="color:var(--oro);font-family:ui-monospace,monospace;font-size:8px">+${Math.round((bonoNivel(i)-1)*100)}%</span>`:"");
+ $("#mXp").style.width=(S.mXp[i]/xpNec(S.mNivel[i])*100)+"%";
+
+ const N=x=>m.sim.find(y=>y.c===x);
+ const F=p=>Math.round(p*(m.coste||1)*bonoNivel(i));   // lo que cobras de verdad
+ let cb=[];
+ if(m.tipo==="suelo"){
+  const f=m.sim[m.sim.length-1];
+  [3,2,1].forEach(k=>cb.push({col:f.col,t:dib(f.c,"17px",1).repeat(k),x:F(m.suelo[k])}));
+  m.sim.filter(x=>x!==f).forEach(x=>cb.push({col:x.col,t:x.c.repeat(3),x:0}));
+ }else if(m.tipo==="clasica"){
+  if(m.rod===4)[...m.sim].reverse().forEach(x=>{if(x.p4)cb.push({col:x.col,t:x.c.repeat(4),x:F(x.p4)})});
+  [...m.sim].reverse().forEach(x=>cb.push({col:x.col,t:x.c.repeat(3),x:F(x.premio)}));
+  (m.pares||[]).forEach(q=>cb.push({col:N(q.c).col,t:q.c.repeat(2),x:F(q.premio)}));
+ }else if(m.tipo==="adyacente"){
+  const malo=m.sim.find(x=>x.malo);
+  [...m.sim].filter(x=>!x.malo).reverse().forEach(x=>
+   cb.push({col:x.col,t:x.c.repeat(3),x:F(x.premio)}));
+  cb.push({col:"var(--tenue)",t:"4 seguidas",x:"×4",mult:1});
+  cb.push({col:"var(--tenue)",t:"5 seguidas",x:"×20",mult:1});
+  cb.push({col:malo.col,t:malo.c.repeat(2),x:F(m.castigo[2])});
+  cb.push({col:malo.col,t:malo.c.repeat(3),x:F(m.castigo[3])});
+ }else if(m.tipo==="doble"){
+  [...m.sim].reverse().forEach(x=>cb.push({col:x.col,t:x.c.repeat(3),x:F(x.premio)}));
+  [...m.sim].slice(0,-1).reverse().forEach(x=>
+   cb.push({col:x.col,t:x.c.repeat(2),x:F(x.premio/5)}));
+  [...m.mult].reverse().forEach(x=>cb.push({col:x.col,t:x.c+x.c+x.c,x:"×"+x.x,mult:1}));
+ }else if(m.tipo==="familia"){
+  [...m.sim].reverse().forEach(x=>cb.push({col:x.col,t:x.c.repeat(3),x:F(x.premio)}));
+  cb.push({col:"var(--tenue)",t:"3 barras mezcladas",x:F(m.mezcla)});
+ }else if(m.tipo==="poker"){
+  const M=m.manos;
+  cb=[{col:"var(--oro)",t:"repóker",x:F(M.repoker)},{col:"var(--oro)",t:"póker",x:F(M.poker)},
+      {col:"var(--crema)",t:"full",x:F(M.full)},{col:"var(--tenue)",t:"trío",x:F(M.trio)},
+      {col:"var(--tenue)",t:"doble pareja",x:F(M.doblePareja)}];
+ }else if(m.tipo==="extremos"){
+  [...m.sim].reverse().forEach(x=>cb.push({col:x.col,t:x.c+"···"+x.c,x:F(x.premio)}));
+  cb.push({col:"var(--oro)",t:"los 5 iguales",x:"×"+m.centro,mult:1});
+ }else if(m.tipo==="distintos"){
+  cb=[{col:"var(--oro)",t:"5 distintos",x:F(m.distintos[5])},
+      {col:"var(--crema)",t:"5 iguales",x:F(m.iguales[5])},
+      {col:"var(--tenue)",t:"4 distintos",x:F(m.distintos[4])}];
+ }
+ // de mayor a menor pago. Los multiplicadores y los castigos, al final
+ cb.sort((a,b)=>{
+  const v=x=>typeof x.x==="number"?x.x:-Infinity;      // los "×N" no son cifras
+  const neg=x=>typeof x.x==="number"&&x.x<0;
+  if(neg(a)!==neg(b))return neg(a)?1:-1;               // lo que resta, al fondo
+  if(a.mult!==b.mult)return a.mult?1:-1;               // los multiplicadores, después
+  return v(b)-v(a)});
+ $("#et2").textContent="LO QUE PAGA CADA COMBINACIÓN";
+ $("#mLema").textContent=m.lema;
+ $("#mCombos").innerHTML=cb.map(l=>{
+  const num=typeof l.x==="number", neg=num&&l.x<0;
+  const txt=l.mult?l.x:(neg?"\u2212"+fmt(Math.abs(l.x)):"+"+fmt(l.x));
+  const cls=neg?"malo":(l.mult?"mult":"");
+  return `<div class="c"><em style="color:${l.col}">${l.t}</em><b class="${cls}">${txt}</b></div>`
+ }).join("");
+ const PB=m.filas===2?probsB(m):null;
+ $("#mOdds").innerHTML=m.sim.map(x=>
+  `<div class="o"><s style="color:${x.col}">${dib(x.c,"15px")}</s><u>${(P[x.c]*100).toFixed(1)}%</u></div>`).join("")
+  +(PB?'<div class="sep2"></div>'+m.mult.map(x=>
+   `<div class="o mini2"><s style="color:${x.col}">${x.c}</s><u>${(PB[x.c]*100).toFixed(0)}%</u></div>`).join(""):"");
+ $("#et2").innerHTML="PREMIOS <span style='opacity:.6;letter-spacing:.08em'>"
+  +`· fichas que cobras por tirada de ${fmt(m.coste)}</span>`;
+
+ $("#maq").className="maq"+(m.desnuda?" desnuda":"")+(m.filas===2?" dosfilas":"");
+ $("#rodillos2").hidden=m.filas!==2;
+ $("#bTirar").textContent=ocupada(i)?(m.desnuda?"REBUSCANDO…":"GIRANDO…")
+  :(m.coste?`TIRAR · ${fmt(m.coste)}`:"REBUSCAR POR EL SUELO");
+ $("#bTirar").disabled=ocupada(i)||S.fichas<m.coste;
+ pintaTop(false);
+ mejoras();
+ plantilla();
+ revelar();guiar();
+ // punto rojo en la pestaña si hay alguna mejora que ya te puedes permitir
+ const hay=MEJ.some(M=>verMej(M)&&S.up[M.id]<M.max&&S.fichas>=M.c(S.up[M.id]));
+ $("#pt").hidden=!hay;}
+
+function plantilla(){
+ if(!hayBobby()){$("#ptB").hidden=true;return}
+ const b=S.bob, P=$("#bobPanel");
+ // se coloca solo; no se mueve a media tanda
+ if(b.restan===0){
+  const d=bobDestino();
+  if(d!==b.maq){
+   const antes=b.maq;b.maq=d;
+   if(d!=null&&antes!=null)toast("BOBBY SE MUDA A "+MAQ[d].nom,"#ffd24a");
+   guardar()}}
+ const m=b.maq!=null?MAQ[b.maq]:null;
+ const n=tandaN(), coste=m?(m.coste||0)*n:0;
+ const puede=m&&b.restan===0&&S.fichas>=coste;
+ const prog=b.restan>0?(n-b.restan)/n:0;
+
+ /* el panel solo se rehace si cambia la estructura: si no, los premios que
+    vuelan sobre el bote se borrarían a cada tirada */
+ const sig=(m?b.maq:"-")+"|"+n;
+ if(sig!==_bobSig){
+  _bobSig=sig;
+  P.innerHTML=`<div class="quien"><span class="cara">\ud83e\uddbe</span>
+   <span><b>Bobby Brazos Largos</b><small id="bobDonde"></small></span></div>`
+  +(m?`<div class="mini" id="bobMini"></div>`:"")
+  +`<div class="bote"><i>EN EL BOTE</i><b id="bobBote"></b>
+    <div class="barra2"><i id="bobBarra"></i></div>
+    <div class="fl" id="bobFl"></div></div>`
+  +`<div class="acc2"><button id="bobGo"></button>
+    <button id="bobGet" class="sec">RECOGER</button></div>`;
+  const go=$("#bobGo");
+  if(go&&go!==VACIO)go.onclick=()=>{if(bobLanzar()){pinta();guardar()}};
+  const get=$("#bobGet");
+  if(get&&get!==VACIO)get.onclick=()=>bobRecoger();
+  _miniMaq=null}
+
+ $("#bobDonde").textContent=m?"en "+m.nom:"esperando un jackpot tuyo";
+ $("#bobBote").textContent=fmt(b.bote);
+ $("#bobBarra").style.width=(prog*100).toFixed(0)+"%";
+ const go=$("#bobGo");
+ if(go&&go!==VACIO){
+  go.textContent=b.restan>0?"TIRANDO "+(n-b.restan)+"/"+n
+   :m?"LANZAR "+n+" \u00b7 "+fmt(coste):"SIN DESTINO";
+  go.disabled=!puede}
+ const get=$("#bobGet");
+ if(get&&get!==VACIO)get.disabled=b.bote<=0;
+ // punto rojo en la pestaña cuando Bobby está libre y puedes pagarle otra tanda
+ $("#ptB").hidden=!puede;
+ pintaMiniBob();
+
+ const L=$("#listaPla");L.innerHTML="";
+ BOBUP.forEach(M=>{
+  const k=S.up[M.id]||0;
+  if(k>=M.max)return;
+  const c=M.c(k),ok=S.fichas>=c;
+  const e=document.createElement("div");e.className="mej"+(ok?"":" no");
+  e.innerHTML=`<div class="txt"><div class="n">${M.n}</div><div class="d">${M.d()}</div></div>`;
+  const bt=document.createElement("button");bt.textContent="$"+fmt(c);bt.disabled=!ok;
+  bt.onclick=()=>{if(S.fichas<c)return;
+   S.fichas-=c;
+   const pg=BigInt(Math.round(c))>S.deuda?S.deuda:BigInt(Math.round(c));
+   S.deuda-=pg;S.pagado+=pg;S.up[M.id]++;
+   AU.compra();toast("−$"+fmt(pg)+" DE DEUDA");
+   pintaTop(true);pinta();guardar()};
+  e.appendChild(bt);L.appendChild(e)})}
+
+function mejoras(){
+ const L=$("#listaMej");L.innerHTML="";
+ const h=document.createElement("div");
+ h.className="mej";h.style.background="none";h.style.border="0";h.style.opacity=".8";
+ h.innerHTML='<div class="txt"><div class="d">Cada mejora que compras se descuenta de la deuda</div></div>';
+ L.appendChild(h);
+ MEJ.forEach(M=>{
+  const k=S.up[M.id]||0;if(k>=M.max||!verMej(M))return;
+  const c=M.c(k),ok=S.fichas>=c;
+  const e=document.createElement("div");e.className="mej"+(ok?"":" no");
+  e.innerHTML=`<div class="txt"><div class="n">${M.n}</div><div class="d">${M.d()}</div></div>`;
+  const b=document.createElement("button");b.textContent="$"+fmt(c);b.disabled=!ok;
+  b.onclick=()=>{if(S.fichas<c)return;
+   S.fichas-=c;
+   const pg=BigInt(Math.round(c))>S.deuda?S.deuda:BigInt(Math.round(c));
+   S.deuda-=pg;S.pagado+=pg;S.up[M.id]++;
+   if(M.id==="suerte"){S.nivel++;for(const key in _rtpCache)delete _rtpCache[key]}
+   if(M.id==="vel")S.vnivel++;
+   if(M.id==="bobby"){
+    S.bob.maq=bobDestino();
+    setTimeout(()=>{AU.jackpot();informar("","BOBBY TRABAJA PARA TI",
+     "Se sienta él solo en la máquina más cara donde ya hayas sacado un jackpot, "
+    +"y se muda a otra mejor en cuanto la revientes.<br><br>"
+    +"Lánzale una tanda y <b>ve a recoger el bote</b>: lo que saca no entra en tu "
+    +"bolsillo hasta que se lo pides.")},520)}
+   AU.compra();toast("−$"+fmt(pg)+" DE DEUDA");
+   // sin montar(): rehacerlo reiniciaría el giro en curso o cambiaría
+   // los símbolos que ya estaban parados en los rodillos
+   pintaTop(true);pinta();guardar();
+   if(S.deuda===0n)setTimeout(()=>toast("HAS PAGADO TU DEUDA","#fff"),700)};
+  e.appendChild(b);L.appendChild(e)})}
+
+let _nvMaq=null,_destacar=null;
+function informar(rot,tit,txt){
+ $("#ifRot").textContent=rot;
+ $("#ifNom").textContent=tit;
+ $("#ifTxt").innerHTML=txt;
+ $("#info").classList.add("on");
+ AU.subeNivel()}
+
+function anunciar(k){
+ const m=MAQ[k];if(!m)return;
+ _nvMaq=k;
+ AU.jackpot();
+ $("#nvNom").textContent=m.nom;
+ $("#nvLem").innerHTML=(k===1
+  ? "El gerente ve que ya tienes fichas para apostar.<br>Te deja sentarte en la primera tragaperras.<br><br><span style=\"opacity:.7\">"+m.lema+"</span>"
+  : m.lema);
+ $("#nvSim").innerHTML=m.sim.map(x=>`<span>${dib(x.c,"30px",1)}</span>`).join("");
+ $("#nueva").classList.add("on");
+ luces("jack",2600)}
+/* el premio más alto que puede dar la máquina: sirve para saber si lo que
+   acabas de sacar es poco o mucho DENTRO DE ESTA MÁQUINA */
+const _maxCache={};
+function maxPago(m){
+ const k=MAQ.indexOf(m);
+ if(_maxCache[k]!==undefined)return _maxCache[k];
+ const top=m.sim.filter(x=>!x.malo).pop();
+ let v=0;
+ if(m.tipo==="suelo")        v=m.suelo[3];
+ else if(m.tipo==="clasica") v=Math.max(top.premio,top.p4||0);
+ else if(m.tipo==="adyacente")v=top.premio*(m.mult[5]||1);
+ else if(m.tipo==="doble")   v=top.premio*Math.max(...m.mult.map(x=>x.x));
+ else if(m.tipo==="poker")   v=m.manos.repoker;
+ else if(m.tipo==="extremos")v=top.premio*m.centro;
+ else if(m.tipo==="distintos")v=Math.max(m.distintos[5],m.iguales[5]);
+ else v=top.premio;
+ return _maxCache[k]=v}
+
+/* el premio más bajo que puede dar, para tener el otro extremo de la escala */
+const _minCache={};
+function minPago(m){
+ const k=MAQ.indexOf(m);
+ if(_minCache[k]!==undefined)return _minCache[k];
+ let v=Infinity;
+ if(m.tipo==="suelo")v=m.suelo[1];
+ else if(m.tipo==="poker")v=m.manos.doblePareja;
+ else if(m.tipo==="distintos")v=m.distintos[4];
+ else if(m.tipo==="doble")v=m.sim[0].premio/5;
+ else{
+  m.sim.forEach(x=>{if(x.premio>0)v=Math.min(v,x.premio)});
+  (m.pares||[]).forEach(q=>v=Math.min(v,q.premio));
+  if(m.mezcla)v=Math.min(v,m.mezcla)}
+ return _minCache[k]=(v===Infinity?1:v)}
+
+/* el premio sube desde los rodillos */
+function flotar(gan,malo,jack,veces){
+ const cont=$("#maq");if(!cont||cont===VACIO)return;
+ const maq=MAQ[S.maq];
+ const g=Math.abs(gan);
+ // dónde cae dentro del abanico de premios de ESTA máquina.
+ // En escala logarítmica: si no, un ×20 al final aplasta todo lo demás.
+ const f=(maq.coste||1)*bonoNivel(S.maq);
+ const lo=Math.log10(Math.max(1,minPago(maq)*f));
+ const hi=Math.log10(Math.max(2,maxPago(maq)*f));
+ const t=hi>lo?(Math.log10(Math.max(1,g))-lo)/(hi-lo):1;
+ const nivel=jack?3:t>=.62?2:t>=.28?1:0;
+ const e=document.createElement("div");
+ e.className="flot"+(malo?" malo":"")+(jack?" jack":"");
+ e.style.fontSize=[17,22,27,31][nivel]+"px";
+ if(!malo)e.style.color=["var(--oro)","#ffd94a","#fff3c4","#fff"][nivel];
+ if(!malo&&nivel>=2)e.style.textShadow=`0 0 ${nivel===3?22:14}px rgba(255,210,74,.9)`;
+ const dur=[1050,1300,1650,2400][nivel];
+ e.style.animationDuration=dur+"ms";
+ e.innerHTML=jack
+  ? `<i>\u2605 JACKPOT \u2605${veces>1?`<u>\u00d7${veces}</u>`:""}</i>`
+    +`<span>+${fmt(g)}</span>`
+  : (malo?"\u2212":"+")+fmt(g);
+ cont.appendChild(e);
+ setTimeout(()=>e.remove(),dur+80)}
+
+/* jackpots encadenados: se cuentan para mostrarlos como ×2, ×3… */
+let _jkN=0,_jkT=0;
+
+function toast(t,c){const d=document.createElement("div");d.className="tst";d.textContent=t;
+ if(c)d.style.color=c;$("#toast").appendChild(d);setTimeout(()=>d.remove(),1600)}
+
+/* ============ ENTRADA ============ */
+
+let held=false;
+const bt=$("#bTirar");
+bt.addEventListener("pointerdown",e=>{e.preventDefault();
+ AU.init();AU.despertar();
+ // mientras gira o falten fichas no pasa nada: ni suena ni se guarda
+ if(ocupada(S.maq)||S.fichas<MAQ[S.maq].coste)return;
+ held=true;AU.pulsa();tirar(S.maq)});
+["pointerup","pointercancel","pointerleave"].forEach(ev=>
+ bt.addEventListener(ev,()=>held=false));
+
+/* Bobby resuelve sus tiradas en segundo plano y las guarda en el bote */
+function bobLanzar(){
+ const b=S.bob;
+ if(b.maq==null||b.restan>0)return false;
+ const m=MAQ[b.maq], n=tandaN(), coste=(m.coste||0)*n;
+ if(S.fichas<coste)return false;
+ S.fichas-=coste;
+ b.restan=n;b.prox=null;
+ AU.pulsa();
+ bobSorteo();
+ return true}
+
+/* decide la tirada y arranca los rodillos; el premio se cobra al pararse */
+function bobSorteo(){
+ const b=S.bob, m=MAQ[b.maq];
+ const a=girar(m), P=pago(m,a);
+ b.prox={a:a,p:P.p,jack:!!P.jack,nom:P.n||""};
+ b.t=Date.now();
+ dibujaMini()}
+
+function bobCobrar(){
+ const b=S.bob, i=b.maq, m=MAQ[i], P=b.prox;
+ if(!P)return;
+ const gan=P.p*(m.coste||1)*bonoNivel(i);
+ b.prox=null;b.restan--;
+ b.ult=P.a;b.ultGan=gan;b.ultJack=P.jack;b.ultNom=P.nom;
+ if(gan!==0)bobVolar(gan,P.jack);
+ if(gan>0){
+  const antes=MAQ.filter(x=>GAN()>=x.abre).length;
+  b.bote+=gan;
+  S.total+=gan;
+  if(MAQ.filter(x=>GAN()>=x.abre).length>antes)anunciar(antes);
+  S.mXp[i]++;
+  if(S.mXp[i]>=xpNec(S.mNivel[i])){S.mXp[i]=0;S.mNivel[i]++;
+   delete _maxCache[i];delete _minCache[i]}}
+ else if(gan<0){b.bote=Math.max(0,b.bote+gan)}
+ if(P.jack)S.jk[i]=1}
+
+function bobTrabaja(){
+ const b=S.bob;
+ if(!hayBobby()||b.maq==null)return false;
+ const now=Date.now();
+ if(b.restan>0){
+  if(b.prox){
+   if(now-b.t<giroBob())return false;        // aún están girando
+   bobCobrar();                              // paran y paga en el acto
+   if(b.restan===0&&S.up.cadena)bobLanzar();
+   return true}
+  if(now-b.t>=ritmoBob()){bobSorteo();return false}   // toca la siguiente
+  return false}
+ if(S.up.cadena)return bobLanzar();
+ return false}
+
+/* ---- la tragaperras de Bobby: rodillos de verdad, en pequeño ----
+   Misma idea que la máquina grande: el resultado se decide antes de animar,
+   la tira cae desacelerando y los rodillos paran uno detrás de otro.
+   La duración sale del ritmo de Bobby, así que se acelera al mejorarlo. */
+const MINILARGO=9;
+let _miniMaq=null,_miniMedir=false;
+
+function miniTira(m,fin,baja){
+ const juego=(baja&&m.mult)?m.mult:m.sim;
+ let h="";
+ for(let k=0;k<MINILARGO-1;k++)
+  h+=celda(m,juego[Math.floor(Math.random()*juego.length)].c,baja);
+ return h+celda(m,fin,baja)}
+
+function miniMedir(el){
+ let ok=true;
+ el.querySelectorAll(".rod").forEach(r=>{
+  const h=r.clientHeight;
+  if(h)r.style.setProperty("--h",h+"px");else ok=false});
+ _miniMedir=!ok}
+
+/* Bobby gira todo su ciclo, y lo reparte como la máquina grande: un tramo
+   rodando y una frenada larga en la que los rodillos van cayendo uno a uno.
+   Cuanto más lento tira, más dura todo, también la frenada. */
+const LECTURA_BOB=()=>Math.min(650,ritmoBob()*0.22);
+const giroBob=()=>Math.max(260,ritmoBob()-LECTURA_BOB());
+const frenadaBob=()=>{const T=giroBob();
+ return Math.min(T*0.9,Math.max(240,T*0.45))};
+
+function faseMini(){
+ const b=S.bob;
+ if(!b.prox)return "quieto";
+ return (Date.now()-b.t) < giroBob()-frenadaBob() ? "vuelo" : "aterriza"}
+
+let _miniFase="",_miniProx=null;
+
+function dibujaMini(){
+ const el=document.getElementById("bobMini");if(!el)return;
+ const b=S.bob, m=b.maq!=null?MAQ[b.maq]:null;
+ if(!m){el.innerHTML="";_miniMaq=null;return}
+ const fase=faseMini(), dos=m.filas===2, N=dos?6:m.rod;
+ const idx=Array.from({length:N},(_,k)=>k);
+ // en vuelo los símbolos son de relleno; el resultado llega con la frenada
+ const a=(fase==="aterriza"&&b.prox)?b.prox.a
+  :((fase==="quieto"&&b.ult&&b.ult.length===N)?b.ult
+   :Array.from({length:N},(_,k)=>m.sim[k%m.sim.length].c));
+ const rodando=fase!=="quieto";
+ const rod=j=>`<div class="rod"><div class="tira${rodando?" vuelo":""}" style="transform:translateY(calc(var(--h) * ${rodando?0:-(MINILARGO-1)}))">${miniTira(m,a[j],dos&&j>=3)}</div></div>`;
+ el.className="mini"+(dos?" dos":"");
+ el.innerHTML=dos
+  ?`<div class="f">${idx.slice(0,3).map(rod).join("")}</div>
+    <div class="f f2">${idx.slice(3).map(rod).join("")}</div>`
+  :`<div class="f">${idx.map(rod).join("")}</div>`;
+ miniMedir(el);
+ _miniMaq=b.maq;_miniFase=fase;_miniProx=b.prox;
+ if(fase!=="aterriza")return;
+
+ /* cada rodillo sigue rodando hasta que le toca: entonces frena solo, y el
+    último se planta justo en el instante en que Bobby cobra */
+ const T=giroBob(), FR=frenadaBob(), pasado=Date.now()-b.t;
+ const paso=FR/N, tope=Math.min(900,Math.max(280,paso*1.5));
+ const tiras=el.querySelectorAll(".tira");
+ const p=b.prox;
+ const abajo=`translateY(calc(var(--h) * ${-(MINILARGO-1)}))`;
+ idx.forEach(j=>{
+  const t=tiras[j];if(!t)return;
+  const para=T-FR+paso*(j+1);
+  const frena=()=>{
+   if(S.bob.prox!==p)return;
+   const queda=para-(Date.now()-b.t);
+   t.classList.remove("vuelo");
+   if(queda<=40){t.style.transform=abajo;return}
+   t.style.setProperty("--d",queda+"ms");
+   t.classList.add("blur");
+   t.style.transform="translateY(0)";
+   requestAnimationFrame(()=>{
+    if(S.bob.prox!==p)return;
+    t.classList.add("mov");t.style.transform=abajo});
+   setTimeout(()=>t.classList.remove("blur"),Math.max(0,queda*0.62))};
+  const espera=(para-tope)-pasado;
+  if(espera<=0)frena();else setTimeout(frena,espera)})}
+
+/* vigila que lo dibujado corresponda a la fase en la que va la tirada */
+function pintaMiniBob(){
+ const el=document.getElementById("bobMini");if(!el)return;
+ if(_miniMedir&&el.innerHTML)miniMedir(el);
+ const fase=faseMini();
+ if(el.innerHTML&&fase===_miniFase&&S.bob.prox===_miniProx&&_miniMaq===S.bob.maq)return;
+ dibujaMini()}
+
+let _bobSig="";
+/* el premio de cada tirada sube y se difumina sobre el bote, como en la máquina */
+function bobVolar(gan,jack){
+ if(S.anim===0)return;
+ const c=document.getElementById("bobFl");if(!c)return;
+ if(c.children.length>6)c.removeChild(c.firstChild);
+ const d=document.createElement("span");
+ d.className="bfl"+(gan<0?" malo":"")+(jack?" jack":"");
+ d.textContent=(gan<0?"\u2212":"+")+fmt(Math.abs(gan));
+ d.style.left=(30+Math.random()*40).toFixed(0)+"%";
+ c.appendChild(d);
+ setTimeout(()=>d.remove(),1000)}
+
+function bobRecoger(){
+ const b=S.bob;
+ if(b.bote<=0)return;
+ S.fichas+=b.bote;b.bote=0;
+ AU.moneda();AU.premio(3);
+ pinta();guardar()}
+
+/* bucle único: resuelve todas las máquinas, las mire el jugador o no */
+setInterval(()=>{
+ const now=Date.now();let redibujar=false;
+ spin.forEach((sp,i)=>{
+  if(!sp)return;
+  if(now>=tParada(sp,sp.N-1)&&!sp.cobrado){
+   resolver(i);
+   if(i===S.maq){
+    const ap=MAQ[i].coste;
+    if(sp.P&&sp.P.malo){$("#res").className="";
+     $("#res").textContent=sp.P.n;flotar(sp.gan,1);AU.malo()}
+    else if(sp.gan>0){$("#res").className=sp.P.big?"big":"w";
+     $("#res").textContent=sp.P.n;
+     if(sp.P.jack){_jkN=(Date.now()-_jkT<2600)?_jkN+1:1;_jkT=Date.now()}
+     flotar(sp.gan,0,sp.P.jack,_jkN);
+     if(sp.P.jack){luces("jack",3200);AU.jackpot()}
+     else if(sp.P.big){luces("gordo",1800);AU.gordo()}
+     else if(sp.gan>ap){luces("premio",900);AU.premio(sp.gan/ap)}
+     else {luces("premio",420);AU.flojo()}}
+    else{$("#res").className="";$("#res").textContent="nada";AU.nada();apagar()}}
+   redibujar=true}
+  if(now>=tFin(sp)){spin[i]=null;redibujar=true}});
+ if(held&&!ocupada(S.maq))if(!tirar(S.maq))held=false;
+ if(bobTrabaja())redibujar=true;
+ if(redibujar)pinta();
+ else if(hayBobby())pintaMiniBob()},60);
+
+
+/* ============ GUARDADO ============
+   Doble vía: localStorage (síncrono y fiable al cerrar) y window.storage si
+   existe. Al cargar gana el más reciente por marca de tiempo. */
+const CLAVE="deuda:v9";
+function serializar(){
+ return JSON.stringify({...S,deuda:S.deuda.toString(),pagado:S.pagado.toString(),t:Date.now()})}
+
+function guardarLocal(){
+ try{localStorage.setItem(CLAVE,serializar());return true}catch(e){return false}}
+let _nube={hay:!!window.storage,ok:0,t:0,err:""};
+async function guardarNube(){
+ try{if(window.storage){await window.storage.set(CLAVE,serializar());
+  _nube.ok=1;_nube.t=Date.now();_nube.err=""}}
+ catch(e){_nube.ok=0;_nube.err=(e&&e.message)||"error"}}
+function guardar(){guardarLocal();guardarNube()}
+
+function leerLocal(){
+ try{const r=localStorage.getItem(CLAVE);return r?JSON.parse(r):null}catch(e){return null}}
+async function leerNube(){
+ try{if(!window.storage)return null;
+  const r=await window.storage.get(CLAVE);return r?JSON.parse(r.value):null}catch(e){return null}}
+
+async function cargar(){
+ const a=leerLocal(),b=await leerNube();
+ const o=(!a)?b:(!b)?a:((a.t||0)>=(b.t||0)?a:b);
+ if(!o)return false;
+ try{Object.assign(S,o,{deuda:BigInt(o.deuda),pagado:BigInt(o.pagado)});
+  MAQ.forEach((_,i)=>{if(S.mNivel[i]===undefined){S.mNivel[i]=1;S.mXp[i]=0}});
+  if(S.up.bobby===undefined)S.up.bobby=0;
+  // antes se regalaba al llegar a las 50.000: ahora hay que comprarlo
+  if(S.v.bobby&&!S.up.bobby){delete S.v.bobby;S.v.bobDesb=1}
+  if(!MAQ[S.maq])S.maq=0;
+  if(S.bob&&S.bob.maq!=null&&!MAQ[S.bob.maq]){S.bob.maq=null;S.bob.restan=0;S.bob.prox=null}
+  return true}catch(e){return false}}
+
+async function borrarGuardado(){
+ try{localStorage.removeItem(CLAVE)}catch(e){}
+ try{if(window.storage)await window.storage.delete(CLAVE)}catch(e){}}
+
+/* ---- código de partida: para rescatarla si el visor borra su caja ---- */
+function codigoPartida(){
+ try{return btoa(unescape(encodeURIComponent(serializar())))}catch(e){return serializar()}}
+
+function restaurarPartida(cod){
+ if(!cod)return false;
+ let txt=cod;
+ try{txt=decodeURIComponent(escape(atob(cod)))}catch(e){}
+ try{
+  const o=JSON.parse(txt);
+  if(o.deuda===undefined)return false;
+  Object.assign(S,o,{deuda:BigInt(o.deuda),pagado:BigInt(o.pagado)});
+  MAQ.forEach((_,i)=>{if(S.mNivel[i]===undefined){S.mNivel[i]=1;S.mXp[i]=0}});
+  if(S.up.bobby===undefined)S.up.bobby=0;
+  if(!MAQ[S.maq])S.maq=0;
+  if(S.bob&&S.bob.maq!=null&&!MAQ[S.bob.maq]){S.bob.maq=null;S.bob.restan=0;S.bob.prox=null}
+  MAQ.forEach((_,i)=>spin[i]=null);
+  guardar();return true
+ }catch(e){return false}}
+
+setInterval(guardar,3000);
+// iOS no dispara beforeunload de forma fiable; estos dos sí
+addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")guardar()});
+addEventListener("pagehide",guardarLocal);
+addEventListener("blur",guardarLocal);
+addEventListener("resize",medir);
+
+/* ============ PANEL DE DESARROLLADOR ============ */
+function devInfo(){
+ const tasa=i=>{const m=MAQ[i];if(GAN()<m.abre)return 0;
+  const c=m.coste||0;return ((rtp(m)-(c?1:0))*(c||1)*bonoNivel(i))/(VEL(m)/1000)};
+ let t=`fichas   ${Math.floor(S.fichas).toLocaleString("es")}
+deuda    ${S.deuda.toString().length} cifras
+suerte   ${S.nivel}   (siguiente $${fmt(MEJ[0].c(S.up.suerte))})
+guardado ${(()=>{try{localStorage.setItem("_t","1");localStorage.removeItem("_t");
+ return "localStorage OK"}catch(e){return "localStorage NO"}})()}
+persist. ${!_nube.hay?"window.storage NO EXISTE (partida en riesgo)"
+ :_nube.ok?"window.storage OK · hace "+Math.round((Date.now()-_nube.t)/1000)+"s"
+ :"window.storage FALLA: "+_nube.err}
+veloc.   ${S.vnivel}   (siguiente $${fmt(MEJ[1].c(S.up.vel))})`;
+ MAQ.forEach((m,i)=>{
+  if(GAN()<m.abre){t+=`\n\n${m.nom}  [bloqueada: ${fmt(m.abre)} fichas ganadas]`;return}
+  t+=`\n\n${m.nom}  niv ${S.mNivel[i]} (+${Math.round((bonoNivel(i)-1)*100)}%)
+  ${m.sim.map(x=>x.c+" "+(probs(m)[x.c]*100).toFixed(1)+"%").join("  ")}
+  x${(rtp(m)*bonoNivel(i)).toFixed(2)}  giro ${(VEL(m)/1000).toFixed(1)}s  ->  ${fmt(tasa(i))} fichas/s`});
+ $("#devInfo").textContent=t}
+function devSync(){for(const k in _rtpCache)delete _rtpCache[k];
+ pintaTop(false);pinta();montar();devInfo();guardar()}
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll("#tabs button").forEach(x=>x.classList.remove("on"));
+ document.querySelectorAll("main section").forEach(x=>x.classList.remove("on"));
+ b.classList.add("on");$("#p-"+b.dataset.t).classList.add("on");
+ b.classList.remove("nueva");
+ AU.init();AU.pulsa()});
+
+$("#menuB").onclick=()=>{
+ guardar();
+ held=false;
+ if(typeof volverMenu==="function")volverMenu();
+ $("#portada").style.display="";$("#portada").style.opacity="1";
+ $("#portada").classList.remove("fuera");$("#portada").classList.add("entra");
+ AU.init();AU.pulsa()};
+
+$("#devB").onclick=()=>{$("#dev").classList.add("on");devInfo()};
+$("#devX").onclick=()=>$("#dev").classList.remove("on");
+$("#ifOk").onclick=()=>{
+ const nom=$("#ifNom").textContent;
+ $("#info").classList.remove("on");
+ const t=$(nom==="BOBBY TRABAJA PARA TI"?"#tabPla":"#tabMej");
+ if(t&&t!==VACIO&&!t.classList.contains("on"))t.classList.add("nueva")};
+$("#nvOk").onclick=()=>{
+ $("#nueva").classList.remove("on");
+ // sigues donde estabas: la nueva se queda parpadeando hasta que la pulses
+ const k=_nvMaq;
+ if(k!=null){_destacar=k;_nvMaq=null}
+ montar();pinta();
+ if(k!=null)setTimeout(()=>verPestana(k),60)};
+
+/* lleva el selector hasta la pestaña indicada para que se vea entera */
+function verPestana(k){
+ const sw=$("#sw");if(!sw||sw===VACIO||!sw.children)return;
+ const b=sw.children[k];if(!b)return;
+ const margen=8;
+ const izq=b.offsetLeft-margen;
+ const der=b.offsetLeft+b.offsetWidth-sw.clientWidth+margen;
+ let x=sw.scrollLeft;
+ if(der>x)x=der;            // se sale por la derecha
+ if(izq<x)x=izq;            // o por la izquierda
+ x=Math.max(0,x);
+ if(sw.scrollTo)sw.scrollTo({left:x,behavior:"smooth"});
+ else sw.scrollLeft=x}
+$("#dev").addEventListener("click",e=>{
+ const b=e.target.closest("button");if(!b)return;
+ const d=b.dataset;
+ if(d.f)S.fichas=(+d.f===-1)?0:S.fichas+ +d.f;
+ if(d.s){S.nivel=Math.max(1,S.nivel+ +d.s);S.up.suerte=S.nivel-1}
+ if(d.sset){S.nivel=+d.sset;S.up.suerte=S.nivel-1}
+ if(d.v){S.vnivel=Math.max(1,S.vnivel+ +d.v);S.up.vel=S.vnivel-1}
+ if(d.vset){S.vnivel=+d.vset;S.up.vel=S.vnivel-1}
+ if(d.m)S.mNivel[S.maq]=Math.max(1,S.mNivel[S.maq]+ +d.m);
+ if(d.mxp)S.mXp[S.maq]++;
+ if(d.d==="cifra")S.deuda=S.deuda/10n;
+ if(d.d==="mas")S.deuda=S.deuda*10n;
+ if(d.d==="casi")S.deuda=9999n;
+ if(d.bob){S.up.bobby=S.up.bobby?0:1;
+  if(S.up.bobby)S.bob.maq=bobDestino();
+  else{S.bob.restan=0;delete S.v.bobby}}
+ if(d.jk)S.jk[S.maq]=1;
+ if(d.exp||d.cop){
+  const cod=codigoPartida();
+  $("#devSave").value=cod;
+  if(d.cop){try{navigator.clipboard.writeText(cod);toast("CÓDIGO COPIADO")}
+   catch(e){$("#devSave").select();toast("SELECCIÓNALO Y COPIA")}}
+  else toast("CÓDIGO GENERADO");
+  return}
+ if(d.imp){
+  const ok=restaurarPartida($("#devSave").value.trim());
+  toast(ok?"PARTIDA RESTAURADA":"CÓDIGO NO VÁLIDO",ok?null:"#e5484d");
+  if(ok){$("#dev").classList.remove("on");devSync()}
+  return}
+ if(d.r){Object.assign(S,{deuda:5000000000000000000n,pagado:0n,fichas:0,nivel:1,vnivel:1,
+   maq:0,total:0,tir:0,up:{suerte:0,vel:0,ritmo:0,tanda:0,cadena:0,bobby:0},mNivel:[1,1,1,1,1,1,1,1],mXp:[0,0,0,0,0,0,0,0],v:{},jk:{},bob:{maq:null,bote:0,restan:0,t:0,prox:null}});
+  S.v={};S.tir=0;MAQ.forEach((_,i)=>spin[i]=null);borrarGuardado()}
+ devSync()});
+setInterval(()=>{if($("#dev").classList.contains("on"))devInfo()},500);
+
+/* ============ ARRANQUE ============ */
+/* ================= CINEMÁTICA ================= */
+const SEP=x=>x.replace(/\B(?=(\d{3})+(?!\d))/g,".");
+
+const CINE=[
+ {t:"Anoche disfrutabas de tu vida como un joven multimillonario.",pausa:1000,
+  son:()=>AU.tono(110,2.2,{tipo:"sine",vol:.18})},
+ {t:"Alcohol.",palabra:1,pausa:520,son:()=>{AU.tono(220,.5,{tipo:"triangle",vol:.22});AU.click(.2,0,900)}},
+ {t:"Drogas.",palabra:1,pausa:520,son:()=>{AU.tono(262,.5,{tipo:"triangle",vol:.22});AU.click(.2,0,900)}},
+ {t:"Excesos.",palabra:1,pausa:1100,son:()=>{AU.tono(330,.7,{tipo:"triangle",vol:.24});AU.click(.24,0,900)}},
+ {t:"Pensaste que sería buena idea acabar por todo lo alto en el casino.",pausa:900},
+ {t:"Y al principio lo fue.",pausa:300,subida:1},
+ {t:"Pero tu suerte cambió.",pausa:300,bajada:1},
+ {t:"No tengas prisa, amigo.",v:1,pausa:1000,son:()=>AU.tono(131,1,{tipo:"sine",vol:.17})},
+ {t:"Pero no saldrás de este casino hasta que pagues tu…",v:1,pausa:2100,titulo:1,
+  tras:()=>AU.tension(2.0)},
+ {final:1}
+];
+
+let _cineIdx=0,_cineT=[];
+const cineLimpia=()=>{_cineT.forEach(clearTimeout);_cineT=[]};
+const espera=(f,ms)=>{const id=setTimeout(f,ms);_cineT.push(id);return id};
+
+function escribir(txt,ger,palabra,fin){
+ const e=$("#cineTxt");let i=0;
+ e.className=palabra?"palabra":"";
+ const paso=()=>{
+  i++;
+  const hecho=txt.slice(0,i), resto=txt.slice(i);
+  // el resto va invisible pero ocupando sitio: así el salto de línea es el
+  // definitivo desde el principio y el cursor nunca se queda arriba
+  // el resto va invisible pero ocupando su sitio, así el reparto en líneas
+  // es el definitivo y el cursor no se descuelga a la línea de arriba
+  const cur=i<txt.length?'<span class="cur">▌</span>':"";
+  e.innerHTML=ger
+   ?`<span class="ger">«${hecho}</span>${cur}<span class="ger invis">${resto}»</span>`
+   :`${hecho}${cur}<span class="invis">${resto}</span>`;
+  if(i<txt.length){
+   if(txt[i-1]!==" ")AU.click(.03,0,2600+Math.random()*600);
+   espera(paso,txt[i-1]==="."?300:(palabra?105:58))}
+  else{if(ger)e.innerHTML=`<span class="ger">«${txt}»</span>`;
+   if(fin)espera(fin,0)}};
+ paso()}
+
+/* recorre una lista de tramos: sube/baja hasta cada meta y se para a respirar */
+function tramos(lista,fin,pinta){
+ let k=0,desde=lista[0].de;
+ const paso=()=>{
+  const c=lista[k];
+  if(!c){espera(fin,900);return}
+  const t0=Date.now();
+  const tic=()=>{
+   const p=Math.min(1,(Date.now()-t0)/c.ms);
+   const e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;      // arranca y frena suave
+   pinta(desde+(c.a-desde)*e,p,c);
+   if(p<1)requestAnimationFrame(tic);
+   else{desde=c.a;k++;if(c.son)c.son();espera(paso,c.pausa)}};
+  tic()};
+ paso()}
+
+/* la racha buena: de cero a 35 millones, a saltos, con la máquina sonando */
+function racha(fin){
+ const e=$("#cineNum");e.className="";e.textContent="";
+ $("#cine").classList.add("sube");
+ espera(()=>{                                    // un respiro antes de que salte la cifra
+  e.textContent="+$0";
+  AU.click(.14,0,1500);
+  espera(()=>tramos([
+   {de:0,   a:2e6, ms:800, pausa:620,son:()=>AU.premio(2)},
+   {a:8e6,  ms:900, pausa:620,son:()=>AU.premio(6)},
+   {a:15e6, ms:900, pausa:640,son:()=>AU.premio(14)},
+   {a:35e6, ms:1400,pausa:1000,son:()=>AU.gordo()}
+  ],fin,(v,p)=>{
+   e.textContent="+$"+SEP(String(Math.floor(v)));
+   if(p<1&&Math.random()<.22)AU.click(.04,0,1700+Math.random()*1000)}),620)
+ },850)}
+
+/* la caída: escalones cada vez más hondos hasta pasar el cero y hundirse */
+function caida(fin){
+ const e=$("#cineNum");
+ $("#cine").classList.remove("sube");
+ tramos([
+  {de:35e6,a:28e6,ms:700,pausa:600,son:()=>AU.perdida(3)},
+  {a:14e6,ms:800,pausa:560,son:()=>AU.perdida(6)},
+  {a:0,ms:900,pausa:700,son:()=>{AU.perdida(10);
+   AU.tono(196,.7,{tipo:"square",vol:.26,sweep:.35});AU.click(.32,0,360)}},
+  {a:-25e6,ms:900,pausa:520,son:()=>AU.perdida(14)},
+  {a:-8e11,ms:1100,pausa:480,son:()=>AU.perdida(22)},
+  {a:-5e18,ms:1800,pausa:1500,son:()=>{AU.perdida(40);
+   AU.tono(62,2.4,{tipo:"square",vol:.28});AU.tono(58,2.4,{tipo:"sawtooth",vol:.14})}}
+ ],fin,(v,p)=>{
+  const neg=v<0;
+  if(neg)e.classList.add("mal");else e.classList.remove("mal");
+  e.textContent=(neg?"−$":"+$")+SEP(String(Math.floor(Math.abs(v))));
+  if(p<1&&Math.random()<.35)AU.click(.05,0,900-p*400+Math.random()*300)})}
+
+/* el título y la cifra viajan hasta la posición exacta que ocupan en la portada */
+function transicion(){
+ const tit=$("#cineTit"), num=$("#cineNum");
+ tit.textContent="DEUDA";
+ tit.style.opacity="1";
+ tit.classList.add("on");
+ AU.impacto();
+ $("#cine").classList.remove("golpe");void $("#cine").offsetWidth;
+ $("#cine").classList.add("golpe");
+ espera(()=>{
+  const p=$("#portada");
+  const marca=p.querySelector(".marca"), cif=p.querySelector("#pCifra")||p.querySelector(".cifra");
+  // que la cifra diga exactamente lo mismo que dirá en la portada
+  num.textContent=cif.textContent;   // mismo texto que la portada, y sigue en rojo
+  // preparar la portada para poder medirla sin que se vea
+  p.style.display="";p.style.visibility="hidden";p.style.opacity="1";
+  const destTit=marca.getBoundingClientRect(), destNum=cif.getBoundingClientRect();
+  const fTit=getComputedStyle(marca).fontSize, fNum=getComputedStyle(cif).fontSize;
+  // igualar el tamaño primero, y medir después: el texto cambia de sitio al escalar
+  // todo lo que no viaja se funde a negro
+  $("#cineTxt").classList.add("apaga");
+  $("#cineSkip").classList.add("apaga");
+  // fuera la animación de entrada: si sigue puesta, su transform final
+  // pisa el desplazamiento y el título se queda clavado
+  tit.classList.remove("on");
+  tit.classList.add("vuela");num.classList.add("vuela");
+  tit.style.fontSize=fTit;num.style.fontSize=fNum;
+  requestAnimationFrame(()=>{
+   const a=tit.getBoundingClientRect(), b=num.getBoundingClientRect();
+   // comparar CENTROS: las cajas tienen anchos distintos y el texto va centrado
+   const cx=r=>r.left+r.width/2, cy=r=>r.top+r.height/2;
+   tit.style.transform=`translate(${(cx(destTit)-cx(a)).toFixed(1)}px,${(cy(destTit)-cy(a)).toFixed(1)}px)`;
+   num.style.transform=`translate(${(cx(destNum)-cx(b)).toFixed(1)}px,${(cy(destNum)-cy(b)).toFixed(1)}px)`});
+  espera(()=>{
+   p.style.visibility="";p.classList.add("entra");
+   $("#cine").style.display="none";
+   try{localStorage.setItem("deuda:cine","1")}catch(e){}},1170);
+ },1100)}
+
+function cineEscena(){
+ const c=CINE[_cineIdx];
+ if(!c){return}
+ if(c.final){transicion();return}
+ if(c.son)c.son();
+ if(c.golpe){$("#cine").classList.remove("golpe");void $("#cine").offsetWidth;
+  $("#cine").classList.add("golpe")}
+ const seguir=()=>{_cineIdx++;espera(cineEscena,c.pausa||900)};
+ const tras=c.subida?()=>racha(seguir)
+   :c.bajada?()=>caida(seguir)
+   :c.titulo?()=>{if(c.tras)c.tras();          // la tensión arranca al acabar la frase
+     _cineIdx++;espera(cineEscena,c.pausa||300)}
+   :seguir;
+ escribir(c.t,c.v===1,c.palabra,tras)}
+
+function cineFinal(){
+ cineLimpia();
+ try{localStorage.setItem("deuda:cine","1")}catch(e){}
+ $("#cine").style.display="none";
+ $("#portada").style.display="";$("#portada").style.opacity="1";
+ $("#portada").classList.remove("fuera");}
+
+/* borra todo rastro de la cinemática anterior */
+function cineReset(){
+ cineLimpia();
+ const c=$("#cine"),t=$("#cineTxt"),ti=$("#cineTit"),n=$("#cineNum");
+ c.style.display="";c.className="";
+ t.className="";t.innerHTML="";
+ ti.className="";ti.textContent="";ti.style.cssText="";
+ n.className="";n.textContent="";n.style.cssText="";
+ $("#cineSkip").className="";$("#cineSkip").hidden=true;
+ $("#cineToca").style.display="";
+ _cineIdx=0}
+
+function arrancarCine(){
+ $("#cineToca").style.display="none";
+ $("#cineSkip").hidden=false;
+ $("#cineSkip").onclick=()=>cineFinal();
+ _cineIdx=0;cineEscena()}
+
+let volverMenu=null;
+function entrar(){$("#portada").classList.remove("entra");$("#portada").classList.add("fuera");
+ setTimeout(()=>{$("#portada").style.display="none";montar()},460)}
+(async()=>{
+ const hay=await cargar();
+ // la cinemática solo en partida nueva; si hay guardado, directo a la portada
+ if(hay){$("#cine").style.display="none"}
+ else{$("#portada").style.display="none";
+  $("#cineToca").onclick=()=>{AU.init();AU.despertar();arrancarCine()}}
+ if(S.anim===0)document.body.classList.add("sinanim");
+ if(S.vol!=null&&AU.master)AU.master.gain.value=S.vol*0.55;
+ montar();pintaTop(false);pinta();
+ function portadaBotones(guardada){
+  const d=S.deuda.toString();
+  $("#pCifra").textContent="$"+d.replace(/\B(?=(\d{3})+(?!\d))/g,".");
+  $("#pSeguir").hidden=!guardada;
+  if(guardada){
+   const pagado=100-Number(S.deuda*10000n/5000000000000000000n)/100;
+   $("#pPie").textContent=d.length+" cifras por pagar"
+    +(pagado>=0.01?" \u00b7 "+pagado.toFixed(2)+"% saldado":"")
+    +" \u00b7 suerte "+S.nivel;
+   $("#pJugar").textContent="EMPEZAR DE CERO";
+   $("#pJugar").className="g"}
+  else{
+   $("#pPie").textContent="Del suelo salen fichas. De las fichas, dólares.";
+   $("#pJugar").textContent="EMPEZAR A PAGAR";
+   $("#pJugar").className="";
+   $("#pJugar").style.background="";$("#pJugar").style.color=""}}
+ let confirmar=false;
+ let hayPartida=hay;
+ portadaBotones(hay);
+ // volver al menú desde la partida: la portada se pone al día
+ volverMenu=()=>{hayPartida=true;confirmar=false;portadaBotones(true)};
+ const aj=(b,on)=>{b.className="sw2"+(on?" on":"")};
+ $("#ajB").onclick=()=>{$("#ajustes").classList.add("on")};
+ $("#ajOk").onclick=()=>{$("#ajustes").classList.remove("on")};
+ aj($("#ajSnd"),AU.on); aj($("#ajAnim"),S.anim!==0); aj($("#ajGuia"),S.guia!==0);
+ $("#ajSnd").onclick=()=>{AU.on=!AU.on;aj($("#ajSnd"),AU.on);
+  if(AU.on){AU.init();AU.despertar();AU.moneda()}};
+ $("#ajAnim").onclick=()=>{S.anim=S.anim===0?1:0;aj($("#ajAnim"),S.anim!==0);
+  document.body.classList.toggle("sinanim",S.anim===0);guardar()};
+ $("#ajGuia").onclick=()=>{S.guia=S.guia===0?1:0;aj($("#ajGuia"),S.guia!==0);guardar();guiar()};
+ $("#ajVol").oninput=e=>{const v=+e.target.value/100;
+  if(AU.master)AU.master.gain.value=v*0.55;S.vol=v;guardar()};
+ $("#pSeguir").onclick=()=>{AU.init();AU.despertar();entrar()};
+ $("#pJugar").onclick=async()=>{
+  AU.init();AU.despertar();
+  if(hayPartida&&!confirmar){confirmar=true;
+   $("#pJugar").textContent="\u00bfSEGURO? SE BORRA TODO";
+   $("#pJugar").style.background="var(--ficha)";
+   $("#pJugar").style.color="#fff";
+   setTimeout(()=>{if(confirmar){confirmar=false;
+    $("#pJugar").textContent="EMPEZAR DE CERO";
+    $("#pJugar").style.background="";$("#pJugar").style.color=""}},3500);
+   return}
+  if(hayPartida){
+   confirmar=false;hayPartida=false;
+   Object.assign(S,{deuda:5000000000000000000n,pagado:0n,fichas:0,nivel:1,vnivel:1,
+    maq:0,total:0,tir:0,up:{suerte:0,vel:0,ritmo:0,tanda:0,cadena:0,bobby:0},mNivel:[1,1,1,1,1,1,1,1],mXp:[0,0,0,0,0,0,0,0],v:{},jk:{},bob:{maq:null,bote:0,restan:0,t:0,prox:null}});
+   await borrarGuardado();
+   for(const k in _rtpCache)delete _rtpCache[k];
+   MAQ.forEach((_,i)=>spin[i]=null);
+   montar();pintaTop(false);pinta();
+   portadaBotones(false);                    // ya no hay partida que continuar
+   $("#portada").style.display="none";
+   cineReset();                              // y la cinemática, en blanco
+   $("#cineToca").onclick=()=>{AU.init();AU.despertar();arrancarCine()};
+   return}
+  montar();pintaTop(false);pinta();entrar()};
+})();
+
+</script>
+</body>
+</html>
